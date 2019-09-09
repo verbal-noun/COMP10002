@@ -25,6 +25,13 @@ int main(int argc, char const *argv[])
             strcpy(all_words[distinctNum], one_word);
             distinctNum++;
         }
+        /* Program silently discards words after MAXWORD
+        distinc ones have beene found. */    
+    }
+    // Outputting the results 
+    printf("%d words read\n", totWords);
+    for(i=0; i<distinctNum; i++) {
+        printf("word #%d is \"s\"\n", i, all_words[i]);
     }
 
     return 0;
