@@ -49,5 +49,5 @@ int get_word(char W[],int limit) {
     }
     // Closing of the string 
     W[len] = '\0';
-    
+    return 0;
 };
