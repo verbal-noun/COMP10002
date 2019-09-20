@@ -8,14 +8,13 @@ int main(int argc, char const *argv[])
     char buffer[MAXLEN];
     char *b = buffer; 
     size_t buffer_size = MAXLEN;
-    const char s[10] = " '\t'"; 
-    char *tok;
+    const char s[10] = ", -"; 
+    char* tok;
     char *str[MAXLEN];
     int i = 0;
     
     while (getline(&b, &buffer_size, stdin) != EOF)
     {
-        
         char line[] = "";
     
         // tokenising the input 
@@ -25,9 +24,8 @@ int main(int argc, char const *argv[])
         str[i++] = tok;
         // Use of strtok 
         // go through other tokens 
-        
+        tok = strtok(NULL, s); 
         } 
-
 
         for(int j=0; j <i; j++) 
         {
@@ -37,9 +35,12 @@ int main(int argc, char const *argv[])
             {
                 strcat(line, " ");
                 strcat(line, str[j]);
+
             }
+            
+            
+            
         }
-        tok = strtok(NULL, s); 
         printf("%s", line);
     }
     
