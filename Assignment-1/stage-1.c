@@ -6,28 +6,31 @@
 int main(int argc, char const *argv[])
 {
 
-    // Very suspicicous... Just use buffer as a char*. Don't declare an array and 'point' b to that array
-    //char buffer[MAXLEN];
+    
+    // Declaring variables
     char *buffer;
     size_t buffer_size = MAXLEN;
+    // The delimiters for strtok function
     const char s[10] = " '\t''\n'";
     char* tok;
-    // Changed str to 2d array. Maybe 'words' is a more appropriate name
+    // A 2D array to word the word we read in
     char words[1000][MAXLEN];
     int numWords = 0;
+    // A variable to assist us printing stuff
     int count = 0;
+
     while (getline(&buffer, &buffer_size, stdin) != EOF)
     {
-        //char line[] = "";
-        // For every line we read in, lets see what we read in
+        
         // tokenising the input
         tok = strtok(buffer, s);
         printf("%c\n", buffer[0]);
-        //For every new line we should reset numWords to 0
+        
         if(buffer[0] == '.') {
             //
         }
         else {
+            //For every new line we should reset numWords to 0
             numWords = 0;
             while (tok != NULL) {
             // Here we have our tokens coming in. Save these words into our array
@@ -39,8 +42,7 @@ int main(int argc, char const *argv[])
             }
         }
         
-
-        // Here, we should have copied all the words into words.
+        // Here, we should have copied all the words into the array words.
 
         // Lets print out everything in words, for each of our line read
         /*
