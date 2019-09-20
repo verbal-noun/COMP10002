@@ -3,6 +3,7 @@
 
 #define MAXLEN 999
 
+
 int main(int argc, char const *argv[])
 {
     char buffer[MAXLEN];
@@ -37,10 +38,9 @@ int main(int argc, char const *argv[])
                 strcat(line, str[j]);
 
             }
-            
-            
-            
         }
+        tok = strtok(NULL, s); 
+
         printf("%s", line);
     }
     
