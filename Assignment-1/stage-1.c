@@ -24,8 +24,7 @@ int main(int argc, char const *argv[])
         
         // tokenising the input
         tok = strtok(buffer, s);
-        printf("%c\n", buffer[0]);
-        
+               
         if(buffer[0] == '.') {
             //
         }
@@ -45,17 +44,24 @@ int main(int argc, char const *argv[])
         // Here, we should have copied all the words into the array words.
 
         // Lets print out everything in words, for each of our line read
-        /*
+        
         for(int i = 0; i < numWords; i ++){
             count = count + strlen(words[i]) + 1;
-            if(count < 51) {
+            // For words line character count more than or equal to 50
+            if(strlen(words[i]) >= 50) {
+                printf("\n%s\n", words[i]);
+                count = 0;
+            }
+            // As long as the line limit is not reached 
+            else if(count < 51) {
                 printf("%s ", words[i]);
-            } else {
+            } 
+            else {
                 printf("\n");
                 count = 0;
             }
             
-        } */
+        } 
     }
 
 
