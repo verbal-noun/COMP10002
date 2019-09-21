@@ -22,6 +22,7 @@ int main(int argc, char const *argv[])
     // A 2D array to word the word we read in
     char words[1000][MAXLEN];
     int numWords = 0;
+    
     // A variable to assist us printing stuff
     int count = 0, margin = 4, width = 50;
 
@@ -72,11 +73,12 @@ int main(int argc, char const *argv[])
             // As long as the line limit is not reached
                 else if(count <= width) {
                     // Print this condition everything this is reached
-                    if(count + strlen(words[i+1]) < width) {
-                        printf("%s ", words[i]);
+
+                    if(((strlen(words[i]) + 1) - count) == 0) {
+                        printf("%s", words[i]);
                     } else
                     {
-                       printf("%s", words[i]);
+                       printf(" %s", words[i]);
                        
                       
                     }
