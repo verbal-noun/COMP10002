@@ -3,6 +3,8 @@
 
 #define MAXLEN 999
 
+// int commands(char* line);
+
 int main(int argc, char const *argv[])
 {
 
@@ -17,18 +19,18 @@ int main(int argc, char const *argv[])
     char words[1000][MAXLEN];
     int numWords = 0;
     // A variable to assist us printing stuff
-    int count = 0;
-
+    int count = 0, margin = 4, width = 50;
     while (getline(&buffer, &buffer_size, stdin) != EOF)
     {
         
         // tokenising the input
-        tok = strtok(buffer, s);
+       
                
         if(buffer[0] == '.') {
-            //
+            // processs the commands
         }
         else {
+            tok = strtok(buffer, s);
             //For every new line we should reset numWords to 0
             numWords = 0;
             while (tok != NULL) {
@@ -48,12 +50,12 @@ int main(int argc, char const *argv[])
         for(int i = 0; i < numWords; i ++){
             count = count + strlen(words[i]) + 1;
             // For words line character count more than or equal to 50
-            if(strlen(words[i]) >= 50) {
+            if(strlen(words[i]) >= width) {
                 printf("\n%s\n", words[i]);
                 count = 0;
             }
             // As long as the line limit is not reached 
-            else if(count < 51) {
+            else if(count <= width) {
                 printf("%s ", words[i]);
             } 
             else {
@@ -67,3 +69,9 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
+
+/*
+int commands(char* line) {
+
+}
+*/
