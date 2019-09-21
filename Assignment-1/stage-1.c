@@ -15,7 +15,7 @@ int main(int argc, char const *argv[])
     char *buffer;
     size_t buffer_size = MAXLEN;
     // The delimiters for strtok function
-    const char s[10] = " \t\n";
+    const char s[10] = " '\t'";
     char* tok;
     // A 2D array to word the word we read in
     char words[1000][MAXLEN];
@@ -104,7 +104,6 @@ void commands(char* line, int *mar, int *wid) {
             }
             /* code */
             digit = line[i+3] - '0';
-            printf("%d", digit);
             num = num * 10 + digit;
 
 
