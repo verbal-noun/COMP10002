@@ -2,6 +2,8 @@
 #include <string.h>
 
 #define MAXLEN 999
+#define YES 1
+#define NO 0
 // Global variable
 int First_command = 0;
 
@@ -51,7 +53,7 @@ int main(int argc, char const *argv[])
             tok = strtok(NULL, s);
             }
             
-            int first_word = 1;
+            int first_word = YES;
             for(int i = 0; i < numWords; i ++)
             {
                 count = count + strlen(words[i]) + 1;
@@ -63,7 +65,7 @@ int main(int argc, char const *argv[])
                     }
                     //printf("\n%s\n", words[i]);
                     count = 0;
-                    first_word = 1;
+                    first_word = YES;
                 }
             // As long as the line limit is not reached
                 else if(count < width) {
@@ -72,20 +74,24 @@ int main(int argc, char const *argv[])
                     if(words[i][ln] == '\n') {
                       words[i][ln] = '\0';
                     }
-                    if()
-                    printf("%s", words[i]);
                     
+                    if(first_word) {
+                        indenter(&margin);
+                        printf("%s ", words[i]);
+                        first_word = NO; 
+                    } else {
+                       printf(" %s", words[i]);
+                    }                    
                 }
-            else {
-                printf("\n");
-                first_word = 1;
-                size_t ln = strlen(words[i]) - 1;
-                    if(words[i][ln] == '\n') {
-                        words[i][ln] = '\0';
-                    }
-                printf("%s", words[i]);
-                count = 0;
-                
+                else {
+                    printf("\n");
+                    first_word = YES;
+                    size_t ln = strlen(words[i]) - 1;
+                        if(words[i][ln] == '\n') {
+                            words[i][ln] = '\0';
+                        }
+                    printf("%s", words[i]);
+                    count = 0;
                 }
         }
 
