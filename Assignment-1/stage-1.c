@@ -5,7 +5,7 @@
 // Global variable 
 int First_command = 0;
 
-int commands(char* line);
+void commands(char* line, int *mar, int *wid);
 
 int main(int argc, char const *argv[])
 {
@@ -15,7 +15,7 @@ int main(int argc, char const *argv[])
     char *buffer;
     size_t buffer_size = MAXLEN;
     // The delimiters for strtok function
-    const char s[10] = " '\t''\n'";
+    const char s[10] = " \t\n";
     char* tok;
     // A 2D array to word the word we read in
     char words[1000][MAXLEN];
@@ -29,9 +29,12 @@ int main(int argc, char const *argv[])
        
                
         if(buffer[0] == '.') {
-            // processs the commands
+            // processs the commands 
+            commands(buffer, &margin, &width);
         }
         else {
+            // Not consecutive commands 
+            First_command = 0;
             tok = strtok(buffer, s);
             //For every new line we should reset numWords to 0
             numWords = 0;
@@ -43,27 +46,28 @@ int main(int argc, char const *argv[])
             // go through other tokens
             tok = strtok(NULL, s);
             }
+
+            for(int i = 0; i < numWords; i ++)
+            {
+                count = count + strlen(words[i]) + 1;
+                // For words line character count more than or equal to 50
+                if(strlen(words[i]) >= width) {
+                    printf("\n%s\n", words[i]);
+                    count = 0;
+                }
+            // As long as the line limit is not reached 
+                else if(count <= width) {
+                    printf("%s ", words[i]);
+                } 
+            else {
+                printf("\n");
+                count = 0;
+                }
         }
         
         // Here, we should have copied all the words into the array words.
 
         // Lets print out everything in words, for each of our line read
-        
-        for(int i = 0; i < numWords; i ++){
-            count = count + strlen(words[i]) + 1;
-            // For words line character count more than or equal to 50
-            if(strlen(words[i]) >= width) {
-                printf("\n%s\n", words[i]);
-                count = 0;
-            }
-            // As long as the line limit is not reached 
-            else if(count <= width) {
-                printf("%s ", words[i]);
-            } 
-            else {
-                printf("\n");
-                count = 0;
-            }
             
         } 
     }
@@ -72,7 +76,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-int commands(char* line) {
+void commands(char* line, int *mar, int *wid) {
     if(line[1] == 'w' || line[1] == 'l' || line[1] == 'p' || line[1] == 'b') {
         if (!First_command) {
             First_command = 1;
@@ -82,12 +86,12 @@ int commands(char* line) {
 
     if(line[1] == 'b') {
         if (First_command) {
-            printf("/n");
+            printf("\n");
         } 
     } 
     else if(line[1] == 'p') {
         if (First_command) {
-            printf("/n/n");
+            printf("\n\n");
         } 
     }
     else {
@@ -100,7 +104,24 @@ int commands(char* line) {
             }
             /* code */
             digit = line[i+3] - '0';
+            printf("%d", digit);
             num = num * 10 + digit;
+
+
+        }
+
+        if(line[1] == 'w') {
+            *wid = num;
+            printf("%d", *wid);
+            if (First_command) {
+            printf("\n");
+            } 
+        }
+        if(line[1] == 'l') {
+            *mar = num;
+            if (First_command) {
+            printf("\n");
+            } 
         }
 
     }
