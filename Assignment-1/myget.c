@@ -307,7 +307,15 @@ void indenter(int *val) {
 
 /****************************************************************/
 
-/* Function imported from Assignment FAQ page */
+/* Function imported from Assignment FAQ page 
+
+ * Function:  mygetchar
+ * --------------------
+ * Speacial getchar(0) '/r'
+ *  
+ * returns: c after removing /r
+ */
+
 int mygetchar() {
 		int c;
 		while ((c=getchar())=='\r') {
