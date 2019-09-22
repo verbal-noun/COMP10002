@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include<ctype.h>
 
 #define MAXLEN 999
 #define YES 1
@@ -28,7 +29,6 @@ int main(int argc, char const *argv[])
     // A variable to assist us printing stuff
     int count = 0, margin = 4, width = 50;
 
-    printf("0----5---10---15---20---25---30---35---40---45---50---55---60\n");
     while (getline(&buffer, &buffer_size, stdin) != EOF)
     {
         //printf("%s", buffer);
@@ -130,12 +130,11 @@ void commands(char* line, int *mar, int *wid, int *command) {
         // For 999 characters the formatter can only be upto 3 digits
         for (size_t i = 0; i < 3; i++)
         {
-            if(line[i+3] == ' '){
+            if(!isdigit(line[i+3])){
                 break;
             }
             /* code */
             digit = line[i+3] - '0';
-            printf("%d", digit);
             num = num * 10 + digit;
 
 
@@ -143,8 +142,8 @@ void commands(char* line, int *mar, int *wid, int *command) {
 
         if(line[1] == 'w') {
             *wid = num;
-            printf("%d", *wid);
             if (*command) {
+            printf("\n");
             printf("\n");
             *command = NO;
             }
@@ -152,6 +151,7 @@ void commands(char* line, int *mar, int *wid, int *command) {
         if(line[1] == 'l') {
             *mar = num;
             if (*command) {
+            printf("\n");
             printf("\n");
             *command = NO;
             }

@@ -65,12 +65,8 @@ int main(int argc, char const *argv[])
                 
                 // For words line character count more than or equal to 50
                 if(strlen(words[i]) >= width) {
-                    count = 0;
-                    if(count == 0){
-                        indenter(&margin);
-                    }
-
                     printf("\n");
+                    indenter(&margin);
                     printf("%s\n", words[i]);
                    
                 
@@ -80,6 +76,7 @@ int main(int argc, char const *argv[])
                     // Print this condition everything this is reached
 
                     if(((strlen(words[i]) + 1) - count) == 0) {
+                        indenter(&margin);
                         printf("%s", words[i]);
                     } else
                     {
@@ -91,8 +88,9 @@ int main(int argc, char const *argv[])
                 }
                 else {
                     printf("\n");
-                    count = strlen(words[i]) + 1;
-                    printf("%s ", words[i]);
+                    count = strlen(words[i]);
+                    indenter(&margin);
+                    printf("%s", words[i]);
                     
                    
                 }
