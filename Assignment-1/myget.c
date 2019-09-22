@@ -8,28 +8,35 @@
 #define DEFAULTWIDTH 50
 #define DEFAULTINDENT 4
 #define MAXLEN 999
+#define LIMIT 3
 
-int get_line(char line[]);
+/****************************************************************/
+
+/* function prototypes */
+
+int read_line(char line[]);
 char process_line(char line[]);
 void commands(char* line, int *mar, int *wid, int *command);
-void line_printer(char line[],int *margin, int *width, int *cur_pos, int *first_comm);
+void line_printer(char line[],int *margin, int *width, int *cur_pos, 
+    int *first_comm);
 void indenter(int *val);
+int mygetchar();
 
-int main()
+/****************************************************************/
+
+/* main program */
+int main(int argc, char const *argv[])
 {   
-    char arr[MAXLEN]; 
-    // A variable to determine the end of reading
-    int end = 0;
-    // Variables which help keeping track of words print in line
+    char arr[MAXLEN]; /* An array to hold content of each line */
+    // Variables which help keeping track of words printed a in line
     int count = 0;
     // Variables to format the ouput 
     int indent = DEFAULTINDENT, width = DEFAULTWIDTH;
     // A variable to check first command or not
     int first_command = YES;
     
-    while(end != EOF){
-        end = get_line(arr);
-        
+    while(read_line(arr) != EOF){
+
         // If the line contains a command
         if(arr[0] == '.') 
         {
@@ -42,18 +49,20 @@ int main()
         {   
             line_printer(arr, &indent, &width, &count, &first_command);
         }
-    };
+    }
+
+    return 0;
 }
 
-int get_line(char line[]) {
-    int c, len = 0;
-    while((c = getchar()) != EOF && c != '\n') {
-        line[len] = c;
+int read_line(char line[]) {
+    int ch, len = 0;
+    while((ch = mygetchar()) != EOF && ch != '\n') {
+        line[len] = ch;
         len++;
     }
     line[len] = '\0';
 
-    if(c == EOF) {
+    if(ch == EOF) {
         return EOF;
     }
     return 0;
@@ -61,7 +70,6 @@ int get_line(char line[]) {
 
 
 void commands(char* line, int *mar, int *wid, int *command) {
-    
     
     if(line[1] == 'b') {
         if (*command) {
@@ -77,17 +85,18 @@ void commands(char* line, int *mar, int *wid, int *command) {
         }
     }
     else {
-        // A variable for loops
         int i = 0;
+        // Variables to read number after commands
         int num = 0, digit;
 
-        // For 999 characters the formatter can only be upto 3 digits
-        for (i = 0; i < 3; i++)
+        // For 999 character limit the formatter can only be upto 3 digits
+        for (i = 0; i < LIMIT; i++)
         {
+            /* Number after commands will always start at the third index of */
+            /* any line */
             if(!isdigit(line[i+3])){
                 break;
             }
-            /* code */
             digit = line[i+3] - '0';
             num = num * 10 + digit;
         }
@@ -111,19 +120,21 @@ void commands(char* line, int *mar, int *wid, int *command) {
     }
 }
 
-void line_printer(char line[],int *margin, int *width, int *cur_pos, int *first_comm)
+void line_printer(char line[],int *margin, int *width, int *cur_pos, 
+    int *first_comm)
 {
-    char s[]=" \t\r\n\v\f";;
+    char delim[]=" \t\r\n\v\f";;
     char* tok;
     char words[MAXLEN][MAXLEN];
     int numWords, i = 0;
+    // Look it up and do correct format 
     int **mar = &margin;
 
     if(*first_comm == NO) {
                 *first_comm = YES;
             }
     // Not consecutive commands
-    tok = strtok(line, s);
+    tok = strtok(line, delim);
     //For every new line we should reset numWords to 0
     numWords = 0;
     while (tok != NULL) 
@@ -132,7 +143,7 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos, int *first_
     strcpy(words[numWords++], tok);
     // Use of strtok
     // go through other tokens
-    tok = strtok(NULL, s);
+    tok = strtok(NULL, delim);
     }
 
     for(i = 0; i < numWords; i ++)
@@ -182,3 +193,13 @@ void indenter(int *val)
     }
     
 }
+
+/* Function imported from Assignment FAQ page */
+int mygetchar() {
+		int c;
+		while ((c=getchar())=='\r') {
+		}
+		return c;
+	}
+
+/* Algorithms are fun! */
