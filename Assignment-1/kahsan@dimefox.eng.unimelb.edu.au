@@ -8,7 +8,9 @@ main(int argc, char* argv[]){
     size_t buffersize = 100;
     char* token;
     int numwords = 0;
+    // int i = 0;
 
+    /*
     while(getline(&buffer, &buffersize, stdin) != EOF){
         numwords = 0;
         token = strtok(buffer, " ");
@@ -19,11 +21,15 @@ main(int argc, char* argv[]){
             token = strtok(NULL, " ");
         }
 
-        for(int i = 0; i < numwords; i++){
+        for(i = 0; i < numwords; i++){
             printf("%s ", words[i]);
         }
        
     }
+    */ 
+   while(getline(&buffer, &buffersize, stdin) != EOF){
+    printf("Hello world! ");
+   }
 
     return 0;
 }
