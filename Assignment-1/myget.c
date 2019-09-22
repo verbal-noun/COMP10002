@@ -55,7 +55,7 @@
 
 int read_line(char line[]);
 char process_line(char line[]);
-void commands(char* line, int *mar, int *wid, int *command);
+void format_commands(char* line, int *mar, int *wid, int *command);
 void line_printer(char line[],int *margin, int *width, int *cur_pos, 
     int *first_comm);
 void indenter(int *val);
@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
         if(arr[0] == '.') 
         {
             /* Process format commands */
-            commands(arr, &indent, &width, &first_command);
+            format_commands(arr, &indent, &width, &first_command);
             /* Reseting word count in line*/
             count = 0;
         }
@@ -98,6 +98,16 @@ int main(int argc, char const *argv[])
 }
 
 /****************************************************************/
+
+
+/*
+ * Function:  read_line
+ * --------------------
+ * reads the text input line by line
+ *
+ *  returns: 0 if it reaches the end of line without encountering EOF
+ *           EOF when end of file is reached.
+ */
 
 int read_line(char line[]) {
     int ch, len = 0;
@@ -115,7 +125,21 @@ int read_line(char line[]) {
 
 /****************************************************************/
 
-void commands(char* line, int *mar, int *wid, int *command) {
+
+/*
+ * Function: commands
+ * --------------------
+ * processes the text formant commands.b, .p, .l and .w
+ *    
+ *
+ *  n: number of terms in the series to sum
+ *
+ *  returns: the approximate value of pi obtained by suming the first n terms
+ *           in the above series
+ *           returns zero on error (if n is non-positive)
+ */
+
+void format_commands(char* line, int *mar, int *wid, int *command) {
     
     if(line[1] == 'b') {
         if (*command) {
