@@ -1,8 +1,33 @@
-101, 102, 103, 104, 105, 106, 107, 108, and 109?
-Plus 110, 111, 112, 113, 114 and all of 115 116 117 118 and 119.
+Hello, what are you
+      doing?
+
+Haha, I'm writing my comp10002 programming assignment.
+Its REALLY REALLY fun, because we are doing
+			text processing.
+.p
+What that means is that whatever I write
+in
+this input file is going to get reformatted and presented 
+neatly                 as the text output of the program (written to stdout, but can easily be captured into a file using ">" as a shell operator), 
+regardless		of how
+
+it appears in the input,
+with embedded formatting commands controlling the layout.
+.p
+Cool, isn't it!
+.p
+Now, here is some more text with some other commands in it:
+.b
+new line one;
+.b
+new line two; and
+.b
+new line three.
+.p
+And a new paragraph as well, taa-dahhh!
 .w 30
-The quick brown fox
-	jumps over the lazy
-dog.  The quick
-brown fox jumps over the lazy dog.  The
-quick brown fox
+And now the width has been shrunk down to thirty,
+whereas previously
+it was at the initial default value
+(see the handout for details).
+Changing either the left margin or the width

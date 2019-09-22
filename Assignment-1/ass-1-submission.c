@@ -1,12 +1,50 @@
+/* Solution to comp10002 Assignment 1, 2019 semester 2.
+
+   Authorship Declaration:
+
+   (1) I certify that the program contained in this submission is completely
+   my own individual work, except where explicitly noted by comments that
+   provide details otherwise.  I understand that work that has been developed
+   by another student, or by me in collaboration with other students,
+   or by non-students as a result of request, solicitation, or payment,
+   may not be submitted for assessment in this subject.  I understand that
+   submitting for assessment work developed by or in collaboration with
+   other students or non-students constitutes Academic Misconduct, and
+   may be penalized by mark deductions, or by other penalties determined
+   via the University of Melbourne Academic Honesty Policy, as described
+   at https://academicintegrity.unimelb.edu.au.
+
+   (2) I also certify that I have not provided a copy of this work in either
+   softcopy or hardcopy or any other form to any other student, and nor will
+   I do so until after the marks are released. I understand that providing
+   my work to other students, regardless of my intention or any undertakings
+   made to me by that other student, is also Academic Misconduct.
+
+   (3) I further understand that providing a copy of the assignment
+   specification to any form of code authoring or assignment tutoring
+   service, or drawing the attention of others to such services and code
+   that may have been made available via such a service, may be regarded
+   as Student General Misconduct (interfering with the teaching activities
+   of the University and/or inciting others to commit Academic Misconduct).
+   I understand that an allegation of Student General Misconduct may arise
+   regardless of whether or not I personally make use of such solutions
+   or sought benefit from such actions.
+
+   Signed by: Kaif Ahsan 1068214
+   Dated:     22 September 2019
+
+*/
+
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAXLEN 999
 #define YES 1
 #define NO 0
 
 
-void commands(char* line, int *mar, int *wid, int *command);
+void commands(char* line, int *mar, int *wid);
 void indenter(int *val);
 
 int main(int argc, char const *argv[])
@@ -22,13 +60,10 @@ int main(int argc, char const *argv[])
     // A 2D array to word the word we read in
     char words[1000][MAXLEN];
     int numWords = 0;
-    // A variable to check first command or not
-    int first_command = YES;
     
     // A variable to assist us printing stuff
     int count = 0, margin = 4, width = 50;
 
-    printf("0----5---10---15---20---25---30---35---40---45---50---55---60\n");
     while (getline(&buffer, &buffer_size, stdin) != EOF)
     {
         //printf("%s", buffer);
@@ -37,13 +72,10 @@ int main(int argc, char const *argv[])
 
         if(buffer[0] == '.') {
             // processs the commands
-            commands(buffer, &margin, &width, &first_command);
+            commands(buffer, &margin, &width);
             count = 0;
         }
         else {
-            if(first_command == NO) {
-                first_command = YES;
-            }
             // Not consecutive commands
             tok = strtok(buffer, s);
             //For every new line we should reset numWords to 0
@@ -109,20 +141,27 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-void commands(char* line, int *mar, int *wid, int *command) {
+void commands(char* line, int *mar, int *wid) {
     
-    
+    static int First_command = NO;
+    if(line[1] == 'w' || line[1] == 'l' || line[1] == 'p' || line[1] == 'b') {
+        if (First_command == 0) {
+            First_command = YES;
+        } else {
+            First_command = NO;
+        }
+
+    }
+
     if(line[1] == 'b') {
-        if (*command) {
+        if (First_command) {
             printf("\n");
-            *command = NO;
         }
     }
     else if(line[1] == 'p') {
-        if (*command) {
+        if (First_command) {
             printf("\n");
             printf("\n");
-            *command = NO;
         }
     }
     else {
@@ -130,12 +169,11 @@ void commands(char* line, int *mar, int *wid, int *command) {
         // For 999 characters the formatter can only be upto 3 digits
         for (size_t i = 0; i < 3; i++)
         {
-            if(line[i+3] == ' '){
+            if(isdigit(line[i+3]) == 0){
                 break;
             }
             /* code */
             digit = line[i+3] - '0';
-            printf("%d", digit);
             num = num * 10 + digit;
 
 
@@ -143,17 +181,16 @@ void commands(char* line, int *mar, int *wid, int *command) {
 
         if(line[1] == 'w') {
             *wid = num;
-            printf("%d", *wid);
-            if (*command) {
+            if (First_command) {
             printf("\n");
-            *command = NO;
+            printf("\n");
             }
         }
         if(line[1] == 'l') {
             *mar = num;
-            if (*command) {
+            if (First_command) {
             printf("\n");
-            *command = NO;
+            printf("\n");
             }
         }
 
