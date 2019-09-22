@@ -1,14 +1,53 @@
+/* Solution to comp10002 Assignment 1, 2019 semester 2.
+
+   Authorship Declaration:
+
+   (1) I certify that the program contained in this submission is completely
+   my own individual work, except where explicitly noted by comments that
+   provide details otherwise.  I understand that work that has been developed
+   by another student, or by me in collaboration with other students,
+   or by non-students as a result of request, solicitation, or payment,
+   may not be submitted for assessment in this subject.  I understand that
+   submitting for assessment work developed by or in collaboration with
+   other students or non-students constitutes Academic Misconduct, and
+   may be penalized by mark deductions, or by other penalties determined
+   via the University of Melbourne Academic Honesty Policy, as described
+   at https://academicintegrity.unimelb.edu.au.
+
+   (2) I also certify that I have not provided a copy of this work in either
+   softcopy or hardcopy or any other form to any other student, and nor will
+   I do so until after the marks are released. I understand that providing
+   my work to other students, regardless of my intention or any undertakings
+   made to me by that other student, is also Academic Misconduct.
+
+   (3) I further understand that providing a copy of the assignment
+   specification to any form of code authoring or assignment tutoring
+   service, or drawing the attention of others to such services and code
+   that may have been made available via such a service, may be regarded
+   as Student General Misconduct (interfering with the teaching activities
+   of the University and/or inciting others to commit Academic Misconduct).
+   I understand that an allegation of Student General Misconduct may arise
+   regardless of whether or not I personally make use of such solutions
+   or sought benefit from such actions.
+
+   Signed by: Kaif Ahsan, 1068214
+   Dated: 23 September 2019
+
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
 
-#define YES 1
-#define NO 0
-#define DEFAULTWIDTH 50
-#define DEFAULTINDENT 4
-#define MAXLEN 999
-#define LIMIT 3
+#define DEFAULTWIDTH 50    /* Default text width */
+#define DEFAULTINDENT 4    /* Default left indentation */
+#define MAXLEN 999         /* Max number of characters in input lines */
+#define LIMIT 3            /* Highest digit count after format commands */
+
+#define YES 1              /* Signals first format command after text*/
+#define NO 0               /* Signals consucutive format commands */
 
 /****************************************************************/
 
@@ -24,15 +63,17 @@ int mygetchar();
 
 /****************************************************************/
 
-/* main program */
+/* main program to format the text input*/
+
 int main(int argc, char const *argv[])
 {   
-    char arr[MAXLEN]; /* An array to hold content of each line */
-    // Variables which help keeping track of words printed a in line
+    /* An array to hold content of each line */
+    char arr[MAXLEN]; 
+    /* A variable which help keeping track of words printed a in line */
     int count = 0;
-    // Variables to format the ouput 
+    /* Variables to format the ouput */
     int indent = DEFAULTINDENT, width = DEFAULTWIDTH;
-    // A variable to check first command or not
+    /* A variable to look for consecutive commands */
     int first_command = YES;
     
     while(read_line(arr) != EOF){
@@ -118,6 +159,8 @@ void commands(char* line, int *mar, int *wid, int *command) {
             }
         }
     }
+       
+    
 }
 
 void line_printer(char line[],int *margin, int *width, int *cur_pos, 
@@ -183,8 +226,7 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
     }
 }
 
-void indenter(int *val) 
-{
+void indenter(int *val) {
     // A variable for loops
     int i = 0;
     for (i = 0; i < *val; i++)
@@ -200,6 +242,6 @@ int mygetchar() {
 		while ((c=getchar())=='\r') {
 		}
 		return c;
-	}
+}	
 
 /* Algorithms are fun! */
