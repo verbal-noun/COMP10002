@@ -67,13 +67,13 @@ int mygetchar();
 
 int main(int argc, char const *argv[])
 {   
-    /* An array to hold content of each line */
+    // An array to hold content of each line 
     char arr[MAXLEN]; 
-    /* A variable which help keeping track of words printed a in line */
+    // A variable which help keeping track of words printed a in line 
     int count = 0;
-    /* Variables to format the ouput */
+    // Variables to format the ouput 
     int indent = DEFAULTINDENT, width = DEFAULTWIDTH;
-    /* A variable to look for consecutive commands */
+    // A variable to look for consecutive commands 
     int first_command = YES;
     
     
@@ -110,7 +110,9 @@ int main(int argc, char const *argv[])
  */
 
 int read_line(char line[]) {
+    // variables to control text inflow 
     int ch, len = 0;
+
     while((ch = mygetchar()) != EOF && ch != '\n') {
         line[len] = ch;
         len++;
@@ -130,18 +132,15 @@ int read_line(char line[]) {
  * Function: commands
  * --------------------
  * processes the text formant commands.b, .p, .l and .w
- *    
+ *    and print appropiate line break and new paragraphs 
  *
- *  n: number of terms in the series to sum
- *
- *  returns: the approximate value of pi obtained by suming the first n terms
- *           in the above series
- *           returns zero on error (if n is non-positive)
+ *  *command: Identifies two or more consecutive commands
  */
 
 void format_commands(char* line, int *mar, int *wid, int *command) {
     
     if(line[1] == 'b') {
+        /* If it's the first format command create newline */
         if (*command) {
             printf("\n");
             *command = NO;
@@ -159,18 +158,20 @@ void format_commands(char* line, int *mar, int *wid, int *command) {
         // Variables to read number after commands
         int num = 0, digit;
 
-        // For 999 character limit the formatter can only be upto 3 digits
+        /* For 999 character limit each line the formatter can only be 
+        upto 3 digits */
         for (i = 0; i < LIMIT; i++)
         {
             /* Number after commands will always start at the third index of */
-            /* any line */
             if(!isdigit(line[i+3])){
                 break;
             }
+            /* Converting the string into an integer */
             digit = line[i+3] - '0';
             num = num * 10 + digit;
         }
 
+        /* Update width or indentation accordingly */
         if(line[1] == 'w') {
             *wid = num;
             if (*command) {
