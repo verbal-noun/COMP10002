@@ -105,7 +105,9 @@ int main(int argc, char const *argv[])
  * --------------------
  * reads the text input line by line
  *
- *  returns: 0 if it reaches the end of line without encountering EOF
+ *  line: unformatted text input
+ *  
+ * returns: 0 if it reaches the end of line without encountering EOF
  *           EOF when end of file is reached.
  */
 
@@ -134,7 +136,10 @@ int read_line(char line[]) {
  * processes the text formant commands.b, .p, .l and .w
  *    and print appropiate line break and new paragraphs 
  *
- *  *command: Identifies two or more consecutive commands
+ *  line :    the input line 
+ *  *mar:     text left indentation
+ *  *wid      text width   
+ *  *command: identifies two or more consecutive commands 
  */
 
 void format_commands(char* line, int *mar, int *wid, int *command) {
@@ -195,38 +200,59 @@ void format_commands(char* line, int *mar, int *wid, int *command) {
 
 /****************************************************************/
 
+/*
+ * Function: line_printer
+ * --------------------
+ * Strips the words only and prints them with appropiate
+ *    line breaks, indentation and width 
+ *
+ *  ine :        the input line 
+ *  *mar:        text left indentation
+ *  *wid         text width
+ *  *cur_pos:    retains the number of words printer so far
+ *               in the line.
+ * *first_comm:  determines whether its the first command 
+ */
+
 void line_printer(char line[],int *margin, int *width, int *cur_pos, 
     int *first_comm)
 {
-    char delim[]=" \t\r\n\v\f";;
+    // The delimiters which will be stripped from lines
+    char delim[]=" \t\r\n\v\f";
+    // Contains the word tokens 
     char* tok;
+    // A 2D array to contain the tokenised words in the line
+    // Size determined by the fact that line can contain 999 characters
     char words[MAXLEN][MAXLEN];
+    // Variable to loop through the line
     int numWords, i = 0;
-    // Look it up and do correct format 
+    // Double pointer for the margin
     int **mar = &margin;
 
+    /* Since text has started to print reset first_command */
     if(*first_comm == NO) {
                 *first_comm = YES;
             }
-    // Not consecutive commands
+    
     tok = strtok(line, delim);
-    //For every new line we should reset numWords to 0
+    
     numWords = 0;
     while (tok != NULL) 
     {
-    // Here we have our tokens coming in. Save these words into our array
+    /* Copying the tokens into the array */
     strcpy(words[numWords++], tok);
-    // Use of strtok
-    // go through other tokens
+    
+    /*go through the rest of the tokens */
     tok = strtok(NULL, delim);
     }
 
+    /* Printing the word tokens. */
     for(i = 0; i < numWords; i ++)
     {
-        //if(count == 0) printf("zero\n");
+        /* Monitor the number of character printed*/
         *cur_pos = *cur_pos + strlen(words[i]) + 1;
                 
-        // For words line character count more than or equal to 50
+        /* For words line character count more than or equal to 50 */
         if(strlen(words[i]) >= *width) 
         {
             printf("\n");
@@ -234,7 +260,7 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
             printf("%s\n", words[i]);
             *cur_pos = 0;        
         }
-        // As long as the line limit is not reached
+        /* As long as the line limit is not reached */
         else if((*cur_pos) <= *width )
         {
             // Print this condition everything this is reached
@@ -249,6 +275,7 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
             printf(" %s", words[i]);         
             }                         
         }
+        /* Max width reached and print a new line */
         else {
             printf("\n");
             *cur_pos = strlen(words[i]);
