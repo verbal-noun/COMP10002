@@ -30,8 +30,8 @@
    regardless of whether or not I personally make use of such solutions
    or sought benefit from such actions.
 
-   Signed by: Kaif Ahsan 1068214
-   Dated:     23 September 2019
+   Signed by: Kaif Ahsan, 1068214
+   Dated: 23 September 2019
 
 */
 
@@ -41,12 +41,13 @@
 #include <ctype.h>
 
 
-#define YES 1
-#define NO 0
-#define DEFAULTWIDTH 50
-#define DEFAULTINDENT 4
-#define MAXLEN 999
-#define LIMIT 3
+#define DEFAULTWIDTH 50    /* Default text width */
+#define DEFAULTINDENT 4    /* Default left indentation */
+#define MAXLEN 999         /* Max number of characters in input lines */
+#define LIMIT 3            /* Highest digit count after format commands */
+
+#define YES 1              /* Signals first format command after text*/
+#define NO 0               /* Signals consucutive format commands */
 
 /****************************************************************/
 
@@ -54,7 +55,7 @@
 
 int read_line(char line[]);
 char process_line(char line[]);
-void commands(char* line, int *mar, int *wid, int *command);
+void format_commands(char* line, int *mar, int *wid, int *command);
 void line_printer(char line[],int *margin, int *width, int *cur_pos, 
     int *first_comm);
 void indenter(int *val);
@@ -62,27 +63,31 @@ int mygetchar();
 
 /****************************************************************/
 
-/* main program */
+/* main program to format the text input*/
+
 int main(int argc, char const *argv[])
 {   
-    char arr[MAXLEN]; /* An array to hold content of each line */
-    // Variables which help keeping track of words printed a in line
+    // An array to hold content of each line 
+    char arr[MAXLEN]; 
+    // A variable which help keeping track of words printed a in line 
     int count = 0;
     // Variables to format the ouput 
     int indent = DEFAULTINDENT, width = DEFAULTWIDTH;
-    // A variable to check first command or not
+    // A variable to look for consecutive commands 
     int first_command = YES;
+    
     
     while(read_line(arr) != EOF){
 
         // If the line contains a command
         if(arr[0] == '.') 
         {
-            commands(arr, &indent, &width, &first_command);
-            // Reset line count 
+            /* Process format commands */
+            format_commands(arr, &indent, &width, &first_command);
+            /* Reseting word count in line*/
             count = 0;
         }
-        // else proceed towards printing the line
+        /* else proceed towards printing the line */
         else
         {   
             line_printer(arr, &indent, &width, &count, &first_command);
@@ -92,8 +97,24 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+/****************************************************************/
+
+
+/*
+ * Function:  read_line
+ * --------------------
+ * reads the text input line by line
+ *
+ *  line: unformatted text input
+ *  
+ * returns: 0 if it reaches the end of line without encountering EOF
+ *           EOF when end of file is reached.
+ */
+
 int read_line(char line[]) {
+    // variables to control text inflow 
     int ch, len = 0;
+
     while((ch = mygetchar()) != EOF && ch != '\n') {
         line[len] = ch;
         len++;
@@ -106,10 +127,25 @@ int read_line(char line[]) {
     return 0;
 }
 
+/****************************************************************/
 
-void commands(char* line, int *mar, int *wid, int *command) {
+
+/*
+ * Function: commands
+ * --------------------
+ * processes the text formant commands.b, .p, .l and .w
+ *    and print appropiate line break and new paragraphs 
+ *
+ *  line :    the input line 
+ *  *mar:     text left indentation
+ *  *wid      text width   
+ *  *command: identifies two or more consecutive commands 
+ */
+
+void format_commands(char* line, int *mar, int *wid, int *command) {
     
     if(line[1] == 'b') {
+        /* If it's the first format command create newline */
         if (*command) {
             printf("\n");
             *command = NO;
@@ -127,18 +163,20 @@ void commands(char* line, int *mar, int *wid, int *command) {
         // Variables to read number after commands
         int num = 0, digit;
 
-        // For 999 character limit the formatter can only be upto 3 digits
+        /* For 999 character limit each line the formatter can only be 
+        upto 3 digits */
         for (i = 0; i < LIMIT; i++)
         {
             /* Number after commands will always start at the third index of */
-            /* any line */
             if(!isdigit(line[i+3])){
                 break;
             }
+            /* Converting the string into an integer */
             digit = line[i+3] - '0';
             num = num * 10 + digit;
         }
 
+        /* Update width or indentation accordingly */
         if(line[1] == 'w') {
             *wid = num;
             if (*command) {
@@ -160,38 +198,61 @@ void commands(char* line, int *mar, int *wid, int *command) {
     
 }
 
+/****************************************************************/
+
+/*
+ * Function: line_printer
+ * --------------------
+ * Strips the words only and prints them with appropiate
+ *    line breaks, indentation and width 
+ *
+ *  ine :        the input line 
+ *  *mar:        text left indentation
+ *  *wid         text width
+ *  *cur_pos:    retains the number of words printer so far
+ *               in the line.
+ * *first_comm:  determines whether its the first command 
+ */
+
 void line_printer(char line[],int *margin, int *width, int *cur_pos, 
     int *first_comm)
 {
-    char delim[]=" \t\r\n\v\f";;
+    // The delimiters which will be stripped from lines
+    char delim[]=" \t\r\n\v\f";
+    // Contains the word tokens 
     char* tok;
+    // A 2D array to contain the tokenised words in the line
+    // Size determined by the fact that line can contain 999 characters
     char words[MAXLEN][MAXLEN];
+    // Variable to loop through the line
     int numWords, i = 0;
-    // Look it up and do correct format 
+    // Double pointer for the margin
     int **mar = &margin;
 
+    /* Since text has started to print reset first_command */
     if(*first_comm == NO) {
                 *first_comm = YES;
             }
-    // Not consecutive commands
+    
     tok = strtok(line, delim);
-    //For every new line we should reset numWords to 0
+    
     numWords = 0;
     while (tok != NULL) 
     {
-    // Here we have our tokens coming in. Save these words into our array
+    /* Copying the tokens into the array */
     strcpy(words[numWords++], tok);
-    // Use of strtok
-    // go through other tokens
+    
+    /*go through the rest of the tokens */
     tok = strtok(NULL, delim);
     }
 
+    /* Printing the word tokens. */
     for(i = 0; i < numWords; i ++)
     {
-        //if(count == 0) printf("zero\n");
+        /* Monitor the number of character printed*/
         *cur_pos = *cur_pos + strlen(words[i]) + 1;
                 
-        // For words line character count more than or equal to 50
+        /* For words line character count more than or equal to 50 */
         if(strlen(words[i]) >= *width) 
         {
             printf("\n");
@@ -199,7 +260,7 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
             printf("%s\n", words[i]);
             *cur_pos = 0;        
         }
-        // As long as the line limit is not reached
+        /* As long as the line limit is not reached */
         else if((*cur_pos) <= *width )
         {
             // Print this condition everything this is reached
@@ -214,6 +275,7 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
             printf(" %s", words[i]);         
             }                         
         }
+        /* Max width reached and print a new line */
         else {
             printf("\n");
             *cur_pos = strlen(words[i]);
@@ -223,6 +285,16 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
     }
 }
 
+/****************************************************************/
+
+/*
+ * Function: indenter
+ * --------------------
+ * Prints the current left indentation
+ *
+ *  *val: value of left indent  
+ * 
+ */
 void indenter(int *val) {
     // A variable for loops
     int i = 0;
@@ -233,7 +305,17 @@ void indenter(int *val) {
     
 }
 
-/* Function imported from Assignment FAQ page */
+/****************************************************************/
+
+/* Function imported from Assignment FAQ page 
+
+ * Function:  mygetchar
+ * --------------------
+ * Speacial getchar(0) '/r'
+ *  
+ * returns: c after removing /r
+ */
+
 int mygetchar() {
 		int c;
 		while ((c=getchar())=='\r') {

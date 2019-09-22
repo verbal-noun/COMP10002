@@ -76,7 +76,6 @@ int main(int argc, char const *argv[])
     // A variable to look for consecutive commands 
     int first_command = YES;
     
-    
     while(read_line(arr) != EOF){
 
         // If the line contains a command
@@ -113,13 +112,13 @@ int main(int argc, char const *argv[])
 
 int read_line(char line[]) {
     // variables to control text inflow 
-    int ch, len = 0;
+    int ch, num = 0;
 
     while((ch = mygetchar()) != EOF && ch != '\n') {
-        line[len] = ch;
-        len++;
+        line[num] = ch;
+        num++;
     }
-    line[len] = '\0';
+    line[num] = '\0';
 
     if(ch == EOF) {
         return EOF;
