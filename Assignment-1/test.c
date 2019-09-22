@@ -25,6 +25,8 @@ int main(int argc, char const *argv[])
     int numWords = 0;
     // A variable to check first command or not
     int first_command = YES;
+    // A variable for loops
+    int i = 0;
     
     // A variable to assist us printing stuff
     int count = 0, margin = 4, width = 50;
@@ -58,7 +60,7 @@ int main(int argc, char const *argv[])
             }
             
             
-            for(int i = 0; i < numWords; i ++)
+            for(i = 0; i < numWords; i ++)
             {
                 //if(count == 0) printf("zero\n");
                 count = count + strlen(words[i]) + 1;
@@ -126,9 +128,12 @@ void commands(char* line, int *mar, int *wid, int *command) {
         }
     }
     else {
+        // A variable for loops
+        int i = 0;
         int num = 0, digit;
+
         // For 999 characters the formatter can only be upto 3 digits
-        for (size_t i = 0; i < 3; i++)
+        for (i = 0; i < 3; i++)
         {
             if(!isdigit(line[i+3])){
                 break;
@@ -162,7 +167,9 @@ void commands(char* line, int *mar, int *wid, int *command) {
 }
 
 void indenter(int *val) {
-    for (int i = 0; i < *val; i++)
+    // A variable for loops
+    int i = 0;
+    for (i = 0; i < *val; i++)
     {
         printf(" ");
     }
