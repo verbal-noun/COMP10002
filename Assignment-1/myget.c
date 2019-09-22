@@ -287,6 +287,14 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
 
 /****************************************************************/
 
+/*
+ * Function: indenter
+ * --------------------
+ * Prints the current left indentation
+ *
+ *  *val: value of left indent  
+ * 
+ */
 void indenter(int *val) {
     // A variable for loops
     int i = 0;
