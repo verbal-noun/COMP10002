@@ -40,12 +40,12 @@
           to put an extra space in front of it so that the "."
           does not get interpreted as a command.)
 
-          And note also that consecutive ".p" commands only
-          cause a single paragraph break to be generated.
-          And the same with multiple ".b" commands in a row,
-          they shouldn't add additional lines. And also, be sure
-          that, for example, .p combinations *not* in column one
-          don't get accidentally processed as commands!
+          And note also that consecutive ".p" commands only cause
+          a single paragraph break to be generated.
+          And the same with multiple ".b" commands in a row, they
+          shouldn't add additional lines. And also, be sure that,
+          for example, .p combinations *not* in column one don't
+          get accidentally processed as commands!
 
           Finally, you need to correctly handle extended strings
           like URLs such as

@@ -72,17 +72,19 @@ int main(int argc, char const *argv[])
                 
                 }
             // As long as the line limit is not reached
-                else if(count <= width) {
+                //|| (count-1 == width)
+                else if((count) <= width ){
                     // Print this condition everything this is reached
 
                     if(((strlen(words[i]) + 1) - count) == 0) {
                         indenter(&margin);
                         printf("%s", words[i]);
+                        // Since no space is printed reset count
+                        count--;
                     } else
                     {
                        printf(" %s", words[i]);
                        
-                      
                     }
                                         
                 }

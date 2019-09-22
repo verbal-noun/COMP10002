@@ -37,14 +37,14 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+#include<ctype.h>
 
 #define MAXLEN 999
 #define YES 1
 #define NO 0
 
 
-void commands(char* line, int *mar, int *wid);
+void commands(char* line, int *mar, int *wid, int *command);
 void indenter(int *val);
 
 int main(int argc, char const *argv[])
@@ -60,6 +60,8 @@ int main(int argc, char const *argv[])
     // A 2D array to word the word we read in
     char words[1000][MAXLEN];
     int numWords = 0;
+    // A variable to check first command or not
+    int first_command = YES;
     
     // A variable to assist us printing stuff
     int count = 0, margin = 4, width = 50;
@@ -72,10 +74,13 @@ int main(int argc, char const *argv[])
 
         if(buffer[0] == '.') {
             // processs the commands
-            commands(buffer, &margin, &width);
+            commands(buffer, &margin, &width, &first_command);
             count = 0;
         }
         else {
+            if(first_command == NO) {
+                first_command = YES;
+            }
             // Not consecutive commands
             tok = strtok(buffer, s);
             //For every new line we should reset numWords to 0
@@ -97,34 +102,34 @@ int main(int argc, char const *argv[])
                 
                 // For words line character count more than or equal to 50
                 if(strlen(words[i]) >= width) {
-                    count = 0;
-                    if(count == 0){
-                        indenter(&margin);
-                    }
-
                     printf("\n");
+                    indenter(&margin);
                     printf("%s\n", words[i]);
                    
                 
                 }
             // As long as the line limit is not reached
-                else if(count <= width) {
+                //|| (count-1 == width)
+                else if((count) <= width ){
                     // Print this condition everything this is reached
 
                     if(((strlen(words[i]) + 1) - count) == 0) {
+                        indenter(&margin);
                         printf("%s", words[i]);
+                        // Since no space is printed reset count
+                        count--;
                     } else
                     {
                        printf(" %s", words[i]);
                        
-                      
                     }
                                         
                 }
                 else {
                     printf("\n");
-                    count = strlen(words[i]) + 1;
-                    printf("%s ", words[i]);
+                    count = strlen(words[i]);
+                    indenter(&margin);
+                    printf("%s", words[i]);
                     
                    
                 }
@@ -141,27 +146,20 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-void commands(char* line, int *mar, int *wid) {
+void commands(char* line, int *mar, int *wid, int *command) {
     
-    static int First_command = NO;
-    if(line[1] == 'w' || line[1] == 'l' || line[1] == 'p' || line[1] == 'b') {
-        if (First_command == 0) {
-            First_command = YES;
-        } else {
-            First_command = NO;
-        }
-
-    }
-
+    
     if(line[1] == 'b') {
-        if (First_command) {
+        if (*command) {
             printf("\n");
+            *command = NO;
         }
     }
     else if(line[1] == 'p') {
-        if (First_command) {
+        if (*command) {
             printf("\n");
             printf("\n");
+            *command = NO;
         }
     }
     else {
@@ -169,7 +167,7 @@ void commands(char* line, int *mar, int *wid) {
         // For 999 characters the formatter can only be upto 3 digits
         for (size_t i = 0; i < 3; i++)
         {
-            if(isdigit(line[i+3]) == 0){
+            if(!isdigit(line[i+3])){
                 break;
             }
             /* code */
@@ -181,16 +179,18 @@ void commands(char* line, int *mar, int *wid) {
 
         if(line[1] == 'w') {
             *wid = num;
-            if (First_command) {
+            if (*command) {
             printf("\n");
             printf("\n");
+            *command = NO;
             }
         }
         if(line[1] == 'l') {
             *mar = num;
-            if (First_command) {
+            if (*command) {
             printf("\n");
             printf("\n");
+            *command = NO;
             }
         }
 

@@ -1,33 +1,17 @@
-Hello, what are you
-      doing?
-
-Haha, I'm writing my comp10002 programming assignment.
-Its REALLY REALLY fun, because we are doing
-			text processing.
+.w 55
+.l 10
+as a command.)
 .p
-What that means is that whatever I write
-in
-this input file is going to get reformatted and presented 
-neatly                 as the text output of the program (written to stdout, but can easily be captured into a file using ">" as a shell operator), 
-regardless		of how
-
-it appears in the input,
-with embedded formatting commands controlling the layout.
 .p
-Cool, isn't it!
-.p
-Now, here is some more text with some other commands in it:
+And note also that consecutive ".p" commands only cause a
+single paragraph break to be generated.
 .b
-new line one;
 .b
-new line two; and
 .b
-new line three.
+And the same with multiple ".b" commands in a row, they shouldn't add
+additional lines. And also, be sure that, for example,
+ .p combinations *not* in column one don't get accidentally processed
+ 				as commands!
 .p
-And a new paragraph as well, taa-dahhh!
-.w 30
-And now the width has been shrunk down to thirty,
-whereas previously
-it was at the initial default value
-(see the handout for details).
-Changing either the left margin or the width
+Finally, you need to correctly handle extended strings like URLs
+such as
