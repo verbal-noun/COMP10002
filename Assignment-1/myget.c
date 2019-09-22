@@ -76,16 +76,18 @@ int main(int argc, char const *argv[])
     /* A variable to look for consecutive commands */
     int first_command = YES;
     
+    
     while(read_line(arr) != EOF){
 
         // If the line contains a command
         if(arr[0] == '.') 
         {
+            /* Process format commands */
             commands(arr, &indent, &width, &first_command);
-            // Reset line count 
+            /* Reseting word count in line*/
             count = 0;
         }
-        // else proceed towards printing the line
+        /* else proceed towards printing the line */
         else
         {   
             line_printer(arr, &indent, &width, &count, &first_command);
@@ -94,6 +96,8 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
+
+/****************************************************************/
 
 int read_line(char line[]) {
     int ch, len = 0;
@@ -109,6 +113,7 @@ int read_line(char line[]) {
     return 0;
 }
 
+/****************************************************************/
 
 void commands(char* line, int *mar, int *wid, int *command) {
     
@@ -162,6 +167,8 @@ void commands(char* line, int *mar, int *wid, int *command) {
        
     
 }
+
+/****************************************************************/
 
 void line_printer(char line[],int *margin, int *width, int *cur_pos, 
     int *first_comm)
@@ -226,6 +233,8 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos,
     }
 }
 
+/****************************************************************/
+
 void indenter(int *val) {
     // A variable for loops
     int i = 0;
@@ -235,6 +244,8 @@ void indenter(int *val) {
     }
     
 }
+
+/****************************************************************/
 
 /* Function imported from Assignment FAQ page */
 int mygetchar() {
