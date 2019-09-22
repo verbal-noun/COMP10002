@@ -1,17 +1,3 @@
-.w 55
-.l 10
-as a command.)
-.p
-.p
-And note also that consecutive ".p" commands only cause a
-single paragraph break to be generated.
-.b
-.b
-.b
-And the same with multiple ".b" commands in a row, they shouldn't add
-additional lines. And also, be sure that, for example,
- .p combinations *not* in column one don't get accidentally processed
- 				as commands!
-.p
-Finally, you need to correctly handle extended strings like URLs
 such as
+http://people.eng.unimelb.edu.au/ammoffat/teaching/10002/ass1/
+(which is 62 characters) that are

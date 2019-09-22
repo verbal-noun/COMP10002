@@ -50,6 +50,5 @@
           Finally, you need to correctly handle extended strings
           like URLs such as
           http://people.eng.unimelb.edu.au/ammoffat/teaching/10002/ass1/
-
           (which is 62 characters) that are longer than the
           current width supposedly allows...

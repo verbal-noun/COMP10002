@@ -145,7 +145,8 @@ void line_printer(char line[],int *margin, int *width, int *cur_pos, int *first_
         {
             printf("\n");
             indenter(*mar);
-            printf("%s\n", words[i]);        
+            printf("%s\n", words[i]);
+            *cur_pos = 0;        
         }
         // As long as the line limit is not reached
         else if((*cur_pos) <= *width )
