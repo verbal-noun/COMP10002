@@ -130,7 +130,7 @@ void commands(char* line, int *mar, int *wid, int *command) {
     else {
         // A variable for loops
         int i = 0;
-        int num = 0, digit;
+        int num = 0, digit = 0;
 
         // For 999 characters the formatter can only be upto 3 digits
         for (i = 0; i < 3; i++)
