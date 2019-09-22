@@ -34,6 +34,8 @@ int main()
         if(arr[0] == '.') 
         {
             commands(arr, &indent, &width, &first_command);
+            // Reset line count 
+            count = 0;
         }
         // else proceed towards printing the line
         else
