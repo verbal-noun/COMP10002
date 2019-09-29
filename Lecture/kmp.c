@@ -5,6 +5,8 @@
 
 #define MAX 100
 
+void kmp_search(char *pat, char *txt);
+
 int main(int argc, char const *argv[])
 {
     int F[MAX], n;
@@ -38,4 +40,18 @@ int main(int argc, char const *argv[])
     }
     
     return 0;
+}
+
+
+void kmp_search(char *pat, char *txt) {
+    int txtlen = strlen(txt);
+    int patlen = strlen(pat);
+
+    // Creating an array to contain the longest prefix suffix values for pattern
+    int arr[patlen];
+
+    // Calculate the failure function for pattern  
+    //
+
+    
 }
