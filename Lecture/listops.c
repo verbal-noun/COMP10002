@@ -108,3 +108,31 @@ list_t *insert_at_foot(list_t *list, data_t value) {
     
     return list;
 }
+
+/* 
+    A function to read data at the head
+*/
+data_t get_head(list_t *list) {
+    assert(list != NULL && list->head != NULL);
+    return list->head->data;
+}
+
+
+/*
+    A function to consume the data at the head the move the linked list 
+    forward 
+*/
+list_t *get_foot(list_t *list) {
+    node_t *oldhead;
+    assert(list != NULL && list->head != NULL);
+    oldhead = list -> head;
+    list->head = list->head->next;
+    if(list->head == NULL)
+    {
+        // Only item in the list got deleted
+        list->foot = NULL;
+    }
+    
+    free(oldhead);
+    return list;
+}
