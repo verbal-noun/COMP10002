@@ -53,5 +53,28 @@ void kmp_search(char *pat, char *txt) {
     // Calculate the failure function for pattern  
     //
 
-    
+    int i = 0; // index for text
+    int j = 0; // index for pattern 
+
+    while (i < j) {
+        if (pat[j] == txt[i]) {
+            j++;
+            i++;
+        }
+        
+        if (j==patlen) {
+            printf("Pattern found at index %d ", i - j);
+            j = pat[j - i];
+        }
+        // Mismatch after j matches 
+        else if ( i < txtlen && pat[j] != txt[i]) {
+            /* code */
+            if (j != 0) {
+                j = pat[j-1];
+            }
+            else {
+                i += 1;
+            }
+    } 
+
 }
