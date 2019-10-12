@@ -83,3 +83,28 @@ list_t *insert_at_head(list_t *list, data_t value) {
 
     return list;
 }
+
+/* 
+    A function to insert item at the foot of the linked list 
+*/
+
+list_t *insert_at_foot(list_t *list, data_t value) {
+    node_t *new;
+    new = (node_t*)malloc(sizeof(*new));
+    assert(new != NULL && list != NULL);
+    new->data = value;
+    new->next = NULL;
+    if(list->foot NULL) 
+    {
+        // This is a first insertion in the list 
+        list->foot = new;
+    }
+    else
+    {
+        /* Items exists beforehand in the list */
+        list->foot->next = new;
+        list->foot = new;
+    }
+    
+    return list;
+}
