@@ -43,12 +43,16 @@ void gridInfoPrinter(data_t dim, data_t start, data_t end, list_t *barrier,
     list_t *path);
 int listItemCount(list_t *list);
 void routePrinter(list_t *path);
+int routeValidator(char **arr, data_t size, data_t start, data_t end, 
+    list_t *route);
 
 /******************************************************************************/
+
 
 int main(int argc, char const *argv[])
 {   
     data_t size, start, goal;
+    int status = 0; // Initial value needs to be fixed 
 
     // Creating a 2D to hold the grid 
     char **arr;
@@ -64,6 +68,11 @@ int main(int argc, char const *argv[])
     route = readRoute(arr);
     
     gridInfoPrinter(size, start, goal, blocks, route);
+    status = routeValidator(arr, size, start, goal, route);
+    //printf("%d\n", status);
+    if(status == 1) {
+        // call fixer algorithm
+    }
 
     /* remember to free memory */
     free_list(blocks);
@@ -182,8 +191,8 @@ char **createGrid(data_t *size, data_t *init, data_t *end) {
     init->row = irow;
     init->col = icol;
     scanf("[%d,%d]\n", &grow, &gcol);
-    end->row = row;
-    end->col = col;
+    end->row = grow;
+    end->col = gcol;
 
     // Identify I and G in the grid 
     arr[irow][icol] = 'I';
@@ -280,7 +289,6 @@ void gridInfoPrinter(data_t dim, data_t start, data_t end, list_t *barrier,
     printf("The proposed route in the grid is:\n");
     routePrinter(path);
 
-    //route validator function.
 }
 
 int listItemCount(list_t *list) {
@@ -322,3 +330,94 @@ void routePrinter(list_t *path) {
         }
     }
 }
+
+int routeValidator(char **arr, data_t size, data_t start, data_t end, 
+    list_t *route) {
+
+        int rowTraverse = 0;
+        int colTraverse = 0;
+        int row = 0, col = 0;
+
+        if(route->head->data.row != start.row || route->head->data.col 
+        != start.col) {
+            printf("Initial cell in the route is wrong\n");
+            return 1;
+        }
+
+        if(route->foot->data.row != end.row || route->foot->data.col 
+        != end.col) {
+            printf("Goal cell in the route is wrong\n");
+            return 1;
+        }
+
+        // Check for illegal move in the route
+        node_t *temp; 
+        data_t prev;
+
+        temp = route->head;
+        prev.row = temp->data.row;
+        prev.col = temp->data.col;
+
+        while(1==1)
+        {
+            // Check the validity of the current node 
+            if(temp->data.row > size.row || temp->data.col > size.col){
+                printf("route is outside of the grid.\n"); 
+                return -1; 
+            }
+            
+            rowTraverse = temp->data.row - prev.row;
+            //printf("%d ", rowTraverse);
+            if(rowTraverse > 1 || rowTraverse < -1 ) {
+                printf("route makes an illegal row move\n");
+                return -1;
+            }
+
+            colTraverse = temp->data.col - prev.col;
+            if(colTraverse > 1 || colTraverse < -1) {
+                printf("route makes an illegal col move\n");
+                return -1;
+            }
+
+            prev.row = temp->data.row;
+            prev.col = temp->data.col;
+            temp = temp->next;
+            
+            if(temp->next == NULL) {
+                rowTraverse = temp->data.row - prev.row;
+                //printf("%d ", rowTraverse);
+                if(rowTraverse > 1 || rowTraverse < -1 ) {
+                    printf("route makes an illegal row move\n");
+                    return -1;
+                }
+
+                colTraverse = temp->data.col - prev.col;
+                if(colTraverse > 1 || colTraverse < -1) {
+                    printf("route makes an illegal col move\n");
+                    return -1;
+                }
+                break;
+            } 
+        }
+
+        // Check if a block is present in the route 
+         temp = route->head;
+
+        while(1==1)
+        {
+            // Check for blocks 
+            row = temp->data.row;
+            col = temp->data.col;
+            if(arr[row][col] == '#') {
+                printf("There is a block in the route path\n");
+                return  1;
+            }
+            temp = temp->next;
+            if(temp->next == NULL) {
+    
+                break;
+            }
+        }
+    printf("The route is valid!\n");
+    return 0;
+}   
