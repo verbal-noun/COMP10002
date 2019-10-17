@@ -4,20 +4,29 @@
 
 
 #define INVALID -1 
-#define BLOCKED 1
-#define VALID 0
+#define BLOCKED 2
+#define TRUE 1
+#define FALSE 0
 #define BLOCK "#"
 #define ROUTE "*"
 #define INPUT "$"
 
-typedef struct  node node_t;
+typedef struct node node_t;
 
 typedef struct
 {
     /* data */
     int row;
     int col;
+    int counter;
 } data_t;
+
+typedef struct 
+{
+    int row;
+    int col;
+    int counter;
+} traverse_t;
 
 struct node 
 {
@@ -40,6 +49,7 @@ typedef struct
 list_t *make_list_empty (void);
 int is_list_empty(list_t *list);
 void free_list(list_t *list);
+list_t *insert_at_head(list_t *list, data_t value);
 list_t *insert_at_foot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
@@ -54,6 +64,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
     list_t *route);
 node_t *blockFinder(char **arr, list_t *route);
 void routeFixer(char **arr, data_t size_t, list_t *route);
+void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim);
 
 /******************************************************************************/
 
@@ -132,6 +143,25 @@ void free_list(list_t *list) {
     free(list);
 };
 
+/*
+    A function to make insertion at the linked list's head 
+*/
+
+list_t *insert_at_head(list_t *list, data_t value) {
+    node_t *new;
+    new = (node_t*)malloc(sizeof(*new));
+    assert(new != NULL && list != NULL);
+    new->data = value;
+    new->next = list->head;
+    list->head = new;
+    if (list->foot == NULL)
+    {
+        /* code */
+        list->foot = new;
+    }
+
+    return list;
+}
 
 list_t *insert_at_foot(list_t *list, data_t value) {
     node_t *new;
@@ -305,7 +335,7 @@ void routePrinter(list_t *path) {
     
     temp = path->head;
     // Run a loop until the last item in processed 
-    while (temp != NULL)
+    while (1==1)
     {
         // Print 5 items maximum if the list
         if(count == 5) {
@@ -315,6 +345,10 @@ void routePrinter(list_t *path) {
         printf("[%d,%d]->", temp->data.row, temp->data.col);
         count++; 
         // Point node towards the next item 
+        if(temp->next == NULL) {
+            printf("[%d,%d]\n", temp->data.row, temp->data.col);
+            break;
+        }
         temp = temp->next;
     }
 }
@@ -389,10 +423,10 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
 
         }
     printf("The route is valid!\n");
-    return VALID;
+    return TRUE;
 }   
 
-void routeFixer(char **arr, data_t size_t, list_t *route) {
+void routeFixer(char **arr, data_t size, list_t *route) {
 
     node_t *broken_segment;
 
@@ -404,12 +438,117 @@ void routeFixer(char **arr, data_t size_t, list_t *route) {
     }
 
     //  Pass broken segment into traverseGrid function and create a traversal 
-
+    traverseGrid(arr, broken_segment, route, size);
     // Pass created stack to pathBuilder function and update path.  
 }
 
-void traverseGrid(char **arr, node_t cell, list_t *route) {
+void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
+    list_t *stack;
+    stack = make_list_empty();
+
+    int found = FALSE;
+    data_t info;
+    int row = 0, col = 0;
+    node_t *temp, *finder;
+
+    info.row = cell->data.row;
+    info.col = cell->data.col;
+    info.counter = 0;
+    stack = insert_at_head(stack, info);
+
+    temp = stack->head;
+    finder = cell->next;
+
+    while (temp!=NULL) {
+        row = temp->data.row;
+        col = temp->data.col;
+
+        
+        // Check up
+        if(row - 1 >= 0) {
+            if(arr[row-1][col] != '#') {
+                info.row = row - 1;
+                info.col = col;
+                info.counter = temp->data.counter + 1;
+                stack = insert_at_head(stack, info);
+            }
+
+            // Check if new cell is part of the route 
+            while(finder!=NULL) {
+                if(row-1 == finder->data.row && col == finder->data.col) {
+                    found = TRUE;
+                    break;
+                }
+
+                finder = finder->next;
+            } 
+        }
+        // Check down 
+        if(row+1 <= dim.row) {
+            if(arr[row+1][col] != '#') {
+                info.row = row + 1;
+                info.col = col;
+                info.counter = temp->data.counter + 1;
+                stack = insert_at_head(stack, info);
+            }
+
+            // Check if new cell is part of the route 
+            while(finder!=NULL) {
+                if(row+1 == finder->data.row && col == finder->data.col) {
+                    found = TRUE;
+                    break;
+                }
+
+                finder = finder->next;
+            }  
+        }
+        // Check left 
+        if(col-1 >= 0) {
+            if(arr[row][col-1] != '#') {
+                info.row = row;
+                info.col = col - 1;
+                info.counter = temp->data.counter + 1;
+                stack = insert_at_head(stack, info);
+            }
+            // Check if new cell is part of the route 
+            while(finder!=NULL) {
+                if(row == finder->data.row && col-1 == finder->data.col) {
+                    found = TRUE;
+                    break;
+                }
+
+                finder = finder->next;
+            } 
+        }
+        //Check right
+        if(col+1 <= dim.col) {
+            if(arr[row][col+1] != '#') {
+                info.row = row;
+                info.col = col+1;
+                info.counter = temp->data.counter + 1;
+                stack = insert_at_head(stack, info);
+            }
+            // Check if new cell is part of the route 
+            while(finder!=NULL) {
+                if(row == finder->data.row && col+1 == finder->data.col) {
+                    found = TRUE;
+                    break;
+                }
+
+                finder = finder->next;
+            } 
+        }
+        
+        temp = temp->next;
+        if(found) break;
+    }
+
+    if(found) {
+        // Call pathBuilder function  
+
+    }
     
+
 }
 
 node_t *blockFinder(char **arr, list_t *route) {
@@ -432,5 +571,5 @@ node_t *blockFinder(char **arr, list_t *route) {
         temp = temp->next;
     }
 
-    return 0;
+    return FALSE;
 }

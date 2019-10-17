@@ -3,8 +3,8 @@
 int main(int argc, char const *argv[])
 {
     int row = 0, col = 0;
-    //val = scanf("[%d,%d]\n", &row, &col);
-    //printf("%d %d\n", row, col);
+    
+    char **arr;
     
 
     while(scanf("[%d,%d]\n", &row, &col) == 2){

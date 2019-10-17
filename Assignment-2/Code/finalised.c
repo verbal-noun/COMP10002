@@ -2,6 +2,14 @@
 #include <assert.h>
 #include <stdlib.h>
 
+
+#define INVALID -1 
+#define BLOCKED 1
+#define VALID 0
+#define BLOCK "#"
+#define ROUTE "*"
+#define INPUT "$"
+
 typedef struct  node node_t;
 
 typedef struct
@@ -33,7 +41,6 @@ list_t *make_list_empty (void);
 int is_list_empty(list_t *list);
 void free_list(list_t *list);
 list_t *insert_at_foot(list_t *list, data_t value);
-void traverseList(list_t *blocks);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
 void updateBlocks(list_t *blocks, char **arr);
@@ -45,6 +52,8 @@ int listItemCount(list_t *list);
 void routePrinter(list_t *path);
 int routeValidator(char **arr, data_t size, data_t start, data_t end, 
     list_t *route);
+node_t *blockFinder(char **arr, list_t *route);
+void routeFixer(char **arr, data_t size_t, list_t *route);
 
 /******************************************************************************/
 
@@ -67,9 +76,14 @@ int main(int argc, char const *argv[])
     list_t *route;
     route = readRoute(arr);
     
+    
+    
     gridInfoPrinter(size, start, goal, blocks, route);
     status = routeValidator(arr, size, start, goal, route);
-    printf("%d\n", status);
+    //printf("%d\n", status);
+    if(status == BLOCKED) {
+        // call fixer algorithm
+    }
 
     /* remember to free memory */
     free_list(blocks);
@@ -80,7 +94,6 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
-
 
 
 /******************************************************************************/
@@ -139,19 +152,6 @@ list_t *insert_at_foot(list_t *list, data_t value) {
     }
     
     return list;
-}
-
-
-void traverseList(list_t *blocks) {
-    node_t *temp;
-    
-    temp = blocks->head;
-    while (temp->next != NULL)
-    {
-        /* code */
-        printf("%d \n", temp->data.row);
-        temp = temp->next;
-    }
 }
 
 char **createGrid(data_t *size, data_t *init, data_t *end) {
@@ -222,15 +222,11 @@ void removeBlocks(list_t *blocks, char **arr) {
     node_t *temp;
     
     temp = blocks->head;
-    while (1==1)
+    while (temp != NULL)
     {
         // Adding # in the main grid
         arr[temp->data.row][temp->data.col] = ' ';
         temp = temp->next;
-        if(temp->next == NULL) {
-            arr[temp->data.row][temp->data.col] = ' ';
-            break;
-        }
     }
 }
 
@@ -275,13 +271,13 @@ void gridInfoPrinter(data_t dim, data_t start, data_t end, list_t *barrier,
     
     int barrierCount = 0;
 
-    printf("==STAGE 0======================================\n");
+    printf("==STAGE 0=======================================\n");
     printf("The grid has %d rows and %d columns.\n", dim.row, dim.col);
     // Print info about number of blocks
     barrierCount = listItemCount(barrier);
     printf("The grid has %d block(s).\n", barrierCount); 
-    printf("The initial cell in the grid is [%d,%d] .\n", start.row, start.col);
-    printf("The goal cell in the grid is [%d,%d] .\n", end.row, end.row);
+    printf("The initial cell in the grid is [%d,%d].\n", start.row, start.col);
+    printf("The goal cell in the grid is [%d,%d].\n", end.row, end.row);
 
     printf("The proposed route in the grid is:\n");
     routePrinter(path);
@@ -293,15 +289,11 @@ int listItemCount(list_t *list) {
     node_t *temp;
     
     temp = list->head;
-    while(1==1)
+    while(temp != NULL)
     {
         // Increment counter for each node in the list
         count++;
         temp = temp->next;
-        if(temp->next == NULL) {
-            count++;
-            break;
-        }
     }
 
     return count;
@@ -312,19 +304,18 @@ void routePrinter(list_t *path) {
     node_t *temp;
     
     temp = path->head;
-    while (1==1)
+    // Run a loop until the last item in processed 
+    while (temp != NULL)
     {
+        // Print 5 items maximum if the list
         if(count == 5) {
             printf("\n");
             count = 0;
         }
         printf("[%d,%d]->", temp->data.row, temp->data.col);
         count++; 
+        // Point node towards the next item 
         temp = temp->next;
-        if(temp->next == NULL) {
-            printf("[%d,%d]\n", temp->data.row, temp->data.col);
-            break;
-        }
     }
 }
 
@@ -338,13 +329,13 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
         if(route->head->data.row != start.row || route->head->data.col 
         != start.col) {
             printf("Initial cell in the route is wrong\n");
-            return 1;
+            return INVALID;
         }
 
         if(route->foot->data.row != end.row || route->foot->data.col 
         != end.col) {
             printf("Goal cell in the route is wrong\n");
-            return 1;
+            return INVALID;
         }
 
         // Check for illegal move in the route
@@ -355,66 +346,91 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
         prev.row = temp->data.row;
         prev.col = temp->data.col;
 
-        while(1==1)
+        while(temp != NULL)
         {
             // Check the validity of the current node 
             if(temp->data.row > size.row || temp->data.col > size.col){
                 printf("route is outside of the grid.\n"); 
-                return -1; 
+                return INVALID; 
             }
             
             rowTraverse = temp->data.row - prev.row;
             //printf("%d ", rowTraverse);
             if(rowTraverse > 1 || rowTraverse < -1 ) {
                 printf("route makes an illegal row move\n");
-                return -1;
+                return INVALID;
             }
 
             colTraverse = temp->data.col - prev.col;
             if(colTraverse > 1 || colTraverse < -1) {
                 printf("route makes an illegal col move\n");
-                return -1;
+                return INVALID;
             }
 
             prev.row = temp->data.row;
             prev.col = temp->data.col;
             temp = temp->next;
             
-            if(temp->next == NULL) {
-                rowTraverse = temp->data.row - prev.row;
-                //printf("%d ", rowTraverse);
-                if(rowTraverse > 1 || rowTraverse < -1 ) {
-                    printf("route makes an illegal row move\n");
-                    return -1;
-                }
-
-                colTraverse = temp->data.col - prev.col;
-                if(colTraverse > 1 || colTraverse < -1) {
-                    printf("route makes an illegal col move\n");
-                    return -1;
-                }
-                break;
-            } 
         }
 
         // Check if a block is present in the route 
-         temp = route->head;
+        temp = route->head;
 
-        while(1==1)
+        while(temp != NULL)
         {
             // Check for blocks 
             row = temp->data.row;
             col = temp->data.col;
             if(arr[row][col] == '#') {
                 printf("There is a block in the route path\n");
-                return  1;
+                return  BLOCKED;
             }
             temp = temp->next;
-            if(temp->next == NULL) {
-    
-                break;
-            }
+
         }
     printf("The route is valid!\n");
-    return 0;
+    return VALID;
 }   
+
+void routeFixer(char **arr, data_t size_t, list_t *route) {
+
+    node_t *broken_segment;
+
+    // Pass route into blockFinder function and return block coordinate
+    broken_segment = blockFinder(arr, route);
+    if(!broken_segment) {
+        // routeFixer function called without any blocks in the route => error 
+        exit(EXIT_FAILURE);
+    }
+
+    //  Pass broken segment into traverseGrid function and create a traversal 
+
+    // Pass created stack to pathBuilder function and update path.  
+}
+
+void traverseGrid(char **arr, node_t cell, list_t *route) {
+    
+}
+
+node_t *blockFinder(char **arr, list_t *route) {
+    
+    node_t *temp;
+    int row = 0, col = 0;
+    assert(route != NULL && route->head != NULL);
+
+    temp = route->head;
+    while(temp != NULL) {
+        if(temp->next != NULL) {
+            row = temp->next->data.row;
+            col = temp->next->data.col;
+        }
+
+        if(arr[row][col] == '#') {
+            return temp;
+        }
+
+        temp = temp->next;
+    }
+
+    return 0;
+}
