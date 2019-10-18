@@ -33,6 +33,7 @@ struct node
     /* data */
     data_t data;
     node_t *next;
+    node_t *prev;
 };
 
 
@@ -49,7 +50,6 @@ typedef struct
 list_t *make_list_empty (void);
 int is_list_empty(list_t *list);
 void free_list(list_t *list);
-list_t *insert_at_head(list_t *list, data_t value);
 list_t *insert_at_foot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
@@ -65,6 +65,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
 node_t *blockFinder(char **arr, list_t *route);
 void routeFixer(char **arr, data_t size_t, list_t *route);
 void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim);
+int checkQueue(int row, int col, list_t *queue);
 
 /******************************************************************************/
 
@@ -91,9 +92,14 @@ int main(int argc, char const *argv[])
     
     gridInfoPrinter(size, start, goal, blocks, route);
     status = routeValidator(arr, size, start, goal, route);
-    //printf("%d\n", status);
+
+    if(status <= 3) {
+        return 0;
+    }
+    
     if(status == BLOCKED) {
         // call fixer algorithm
+        routeFixer(arr, size, route);
     }
 
     /* remember to free memory */
@@ -144,31 +150,16 @@ void free_list(list_t *list) {
 };
 
 /*
-    A function to make insertion at the linked list's head 
+    A function to make insertion at the linked list's foot 
 */
-
-list_t *insert_at_head(list_t *list, data_t value) {
-    node_t *new;
-    new = (node_t*)malloc(sizeof(*new));
-    assert(new != NULL && list != NULL);
-    new->data = value;
-    new->next = list->head;
-    list->head = new;
-    if (list->foot == NULL)
-    {
-        /* code */
-        list->foot = new;
-    }
-
-    return list;
-}
-
 list_t *insert_at_foot(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
     new->data = value;
     new->next = NULL;
+    new->prev = NULL;
+
     if(list->foot == NULL) 
     {
         // This is a first insertion in the list 
@@ -178,6 +169,7 @@ list_t *insert_at_foot(list_t *list, data_t value) {
     {
         /* Items exists beforehand in the list */
         list->foot->next = new;
+        new->prev = list->foot;
         list->foot = new;
     }
     
@@ -437,14 +429,15 @@ void routeFixer(char **arr, data_t size, list_t *route) {
         exit(EXIT_FAILURE);
     }
 
-    //  Pass broken segment into traverseGrid function and create a traversal 
+    //  Pass broken segment into traverseGrid function and create a traversal
     traverseGrid(arr, broken_segment, route, size);
-    // Pass created stack to pathBuilder function and update path.  
+
 }
 
 void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     list_t *stack;
     stack = make_list_empty();
+    int exist = 0;
 
     int found = FALSE;
     data_t info;
@@ -454,10 +447,10 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     info.row = cell->data.row;
     info.col = cell->data.col;
     info.counter = 0;
-    stack = insert_at_head(stack, info);
+    stack = insert_at_foot(stack, info);
 
     temp = stack->head;
-    finder = cell->next;
+    
 
     while (temp!=NULL) {
         row = temp->data.row;
@@ -466,16 +459,21 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         
         // Check up
         if(row - 1 >= 0) {
+            finder = cell->next;
+            // check if that row already exists in the queue 
+            exist = checkQueue(row-1, col, stack);
+
             if(arr[row-1][col] != '#') {
                 info.row = row - 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                stack = insert_at_head(stack, info);
+                if(!exist) stack = insert_at_foot(stack, info);
             }
 
             // Check if new cell is part of the route 
-            while(finder!=NULL) {
-                if(row-1 == finder->data.row && col == finder->data.col) {
+            while(finder!=NULL && !exist) {
+                if(row-1 == finder->data.row && col == finder->data.col && 
+                arr[row-1][col] != '#') {
                     found = TRUE;
                     break;
                 }
@@ -485,16 +483,20 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         }
         // Check down 
         if(row+1 <= dim.row) {
+            finder = cell->next;
+            exist = checkQueue(row+1, col, stack);
+
             if(arr[row+1][col] != '#') {
                 info.row = row + 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                stack = insert_at_head(stack, info);
+                if(!exist) stack = insert_at_foot(stack, info);
             }
 
             // Check if new cell is part of the route 
-            while(finder!=NULL) {
-                if(row+1 == finder->data.row && col == finder->data.col) {
+            while(finder!=NULL && !exist) {
+                if(row+1 == finder->data.row && col == finder->data.col && 
+                arr[row+1][col] != '#') {
                     found = TRUE;
                     break;
                 }
@@ -504,15 +506,19 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         }
         // Check left 
         if(col-1 >= 0) {
+            finder = cell->next;
+            exist = checkQueue(row, col-1, stack);
+
             if(arr[row][col-1] != '#') {
                 info.row = row;
                 info.col = col - 1;
                 info.counter = temp->data.counter + 1;
-                stack = insert_at_head(stack, info);
+               if(!exist) stack = insert_at_foot(stack, info);
             }
             // Check if new cell is part of the route 
-            while(finder!=NULL) {
-                if(row == finder->data.row && col-1 == finder->data.col) {
+            while(finder!=NULL && !exist) {
+                if(row == finder->data.row && col-1 == finder->data.col &&
+                arr[row][col-1] != '#') {
                     found = TRUE;
                     break;
                 }
@@ -522,15 +528,19 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         }
         //Check right
         if(col+1 <= dim.col) {
+            finder = cell->next;
+            exist = checkQueue(row, col+1, stack);
+
             if(arr[row][col+1] != '#') {
                 info.row = row;
                 info.col = col+1;
                 info.counter = temp->data.counter + 1;
-                stack = insert_at_head(stack, info);
+                if(!exist) stack = insert_at_foot(stack, info);
             }
             // Check if new cell is part of the route 
-            while(finder!=NULL) {
-                if(row == finder->data.row && col+1 == finder->data.col) {
+            while(finder!=NULL && !exist) {
+                if(row == finder->data.row && col+1 == finder->data.col && 
+                arr[row][col+1] != '#') {
                     found = TRUE;
                     break;
                 }
@@ -543,8 +553,19 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         if(found) break;
     }
 
+    temp = stack->head;
+    while (temp!=NULL)
+    {
+        /* code */
+        printf("[%d, %d], %d\n", temp->data.row, temp->data.col, temp->data.counter);
+        temp = temp -> next;
+    }
+    
+
     if(found) {
-        // Call pathBuilder function  
+        // Call pathBuilder function
+
+
 
     }
     
@@ -572,4 +593,18 @@ node_t *blockFinder(char **arr, list_t *route) {
     }
 
     return FALSE;
+}
+
+int checkQueue(int row, int col, list_t *queue) {
+    node_t *temp;
+    temp = queue->head;
+
+    while(temp != NULL) {
+        if(temp->data.row == row && temp->data.col == col) {
+            return TRUE;
+        }
+
+        temp = temp->next;
+    }
+    return 0;
 }
