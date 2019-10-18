@@ -68,6 +68,15 @@ int main(int argc, char const *argv[])
     info.col, info.row = 2;
     insert_at_foot(list, info);
 
+    /*
+    node_t temp = stack->foot;
+    
+    while (temp!=NULL)
+    {
+        
+        printf("[%d, %d], %d\n", temp->data.row, temp->data.col, temp->data.counter);
+        temp = temp -> prev;
+    } */
     
     printf("%p\n", list->foot->prev);
     printf("%p\n", list->head);

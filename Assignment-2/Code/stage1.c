@@ -4,7 +4,7 @@
 
 
 #define INVALID -1 
-#define BLOCKED 2
+#define BLOCKED 4
 #define TRUE 1
 #define FALSE 0
 #define BLOCK "#"
@@ -50,6 +50,7 @@ typedef struct
 list_t *make_list_empty (void);
 int is_list_empty(list_t *list);
 void free_list(list_t *list);
+list_t *insert_at_head(list_t *list, data_t value);
 list_t *insert_at_foot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
@@ -66,6 +67,7 @@ node_t *blockFinder(char **arr, list_t *route);
 void routeFixer(char **arr, data_t size_t, list_t *route);
 void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim);
 int checkQueue(int row, int col, list_t *queue);
+void pathBuilder(list_t *queue, data_t size);
 
 /******************************************************************************/
 
@@ -88,14 +90,8 @@ int main(int argc, char const *argv[])
     list_t *route;
     route = readRoute(arr);
     
-    
-    
     gridInfoPrinter(size, start, goal, blocks, route);
     status = routeValidator(arr, size, start, goal, route);
-
-    if(status <= 3) {
-        return 0;
-    }
     
     if(status == BLOCKED) {
         // call fixer algorithm
@@ -149,6 +145,29 @@ void free_list(list_t *list) {
     free(list);
 };
 
+list_t *insert_at_head(list_t *list, data_t value) {
+    node_t *new;
+    new = (node_t*)malloc(sizeof(*new));
+    assert(new != NULL && list != NULL);
+    new->data = value;
+    new->next = NULL;
+    new->prev = NULL;
+
+    if(list->head == NULL) 
+    {
+        // This is a first insertion in the list 
+        list->head = list->foot = new;
+    }
+    else
+    {
+        /* Items exists beforehand in the list */
+        new->next = list->head;
+        list->head->prev = new;
+        list->head = new;
+    }
+    
+    return list;
+}
 /*
     A function to make insertion at the linked list's foot 
 */
@@ -337,11 +356,12 @@ void routePrinter(list_t *path) {
         printf("[%d,%d]->", temp->data.row, temp->data.col);
         count++; 
         // Point node towards the next item 
+        temp = temp->next;
         if(temp->next == NULL) {
             printf("[%d,%d]\n", temp->data.row, temp->data.col);
             break;
         }
-        temp = temp->next;
+        
     }
 }
 
@@ -481,8 +501,10 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 finder = finder->next;
             } 
         }
+        if(found) break;
+
         // Check down 
-        if(row+1 <= dim.row) {
+        if(row+1 < dim.row) {
             finder = cell->next;
             exist = checkQueue(row+1, col, stack);
 
@@ -504,6 +526,8 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 finder = finder->next;
             }  
         }
+        if(found) break;
+
         // Check left 
         if(col-1 >= 0) {
             finder = cell->next;
@@ -526,8 +550,10 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 finder = finder->next;
             } 
         }
+        if(found) break;
+        
         //Check right
-        if(col+1 <= dim.col) {
+        if(col+1 < dim.col) {
             finder = cell->next;
             exist = checkQueue(row, col+1, stack);
 
@@ -552,18 +578,12 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         temp = temp->next;
         if(found) break;
     }
-
-    temp = stack->head;
-    while (temp!=NULL)
-    {
-        /* code */
-        printf("[%d, %d], %d\n", temp->data.row, temp->data.col, temp->data.counter);
-        temp = temp -> next;
-    }
     
+    printf("%d, %d\n", stack->foot->data.row, stack->foot->data.col);
 
     if(found) {
         // Call pathBuilder function
+        //pathBuilder(stack, dim);
 
 
 
@@ -607,4 +627,89 @@ int checkQueue(int row, int col, list_t *queue) {
         temp = temp->next;
     }
     return 0;
+}
+
+void pathBuilder(list_t *queue, data_t size) {
+    
+    char **grid;
+    int i = 0, j = 0;
+    node_t *temp;
+    data_t pos, info;
+    list_t *new_path;
+    new_path = make_list_empty();
+    
+    grid = (char**)malloc(size.row * sizeof(char*));
+    assert(grid != NULL);
+    for(i=0; i < size.row; i++) {
+        grid[i] = (char*)malloc(size.col * sizeof(char*));
+        assert(grid[i] != NULL);
+    }
+
+    for(i=0; i < size.row; i++) {
+        for(j = 0; j < size.col; j++) {
+            grid[i][j] = -1;
+        }
+    }
+
+    temp = queue->foot;
+    while (temp != NULL)
+    {
+        /* code */
+        grid[temp->data.row][temp->data.col] = temp->data.counter;
+        temp = temp->prev;
+    }
+
+    for(i=0; i < size.row; i++) {
+        for(j = 0; j < size.col; j++) {
+            printf("%2d ", grid[i][j]);
+        }
+        printf("\n");
+    }
+    
+    pos = queue->foot->data;
+    
+    while(pos.counter != 0) {
+
+        if((pos.row-1 >= 0) && grid[pos.row - 1][pos.col] == 
+        (pos.counter - 1)) {
+            info.row = pos.row -1;
+            info.col = pos.col;
+            info.counter = pos.counter - 1;
+            pos = info;
+            new_path = insert_at_head(new_path, info);
+        }
+        else if((pos.row + 1 < size.row) && grid[pos.row + 1][pos.col] == 
+        (pos.counter - 1)) {
+            info.row = pos.row + 1;
+            info.col = pos.col;
+            info.counter = pos.counter - 1;
+            pos = info;
+            new_path = insert_at_head(new_path, info);
+        }
+        else if((pos.col -1 >= 0) && grid[pos.row][pos.col - 1] == 
+        (pos.counter - 1)) {
+            info.row = pos.row;
+            info.col = pos.col - 1;
+            info.counter = pos.counter - 1;
+            pos = info;
+            new_path = insert_at_head(new_path, info);
+        }
+        else if((pos.col < size.col) && grid[pos.row][pos.col + 1] == 
+        (pos.counter - 1)) {
+            info.row = pos.row;
+            info.col = pos.col + 1;
+            info.counter = pos.counter - 1;
+            pos = info;
+            new_path = insert_at_head(new_path, info);
+        }
+    } 
+    
+    
+    temp = new_path->head;
+    while(temp != NULL) {
+        printf("[%d,%d] - %d\n", temp->data.row, temp->data.col, temp->data.counter);
+
+        temp = temp->next;
+    }
+         
 }
