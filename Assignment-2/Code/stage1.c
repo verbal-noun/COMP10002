@@ -67,7 +67,8 @@ node_t *blockFinder(char **arr, list_t *route);
 void routeFixer(char **arr, data_t size_t, list_t *route);
 void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim);
 int checkQueue(int row, int col, list_t *queue);
-void pathBuilder(list_t *queue, data_t size);
+list_t *pathBuilder(list_t *queue, list_t *route, data_t size);
+void updatePath(list_t *route, list_t *new_path, list_t* queue);
 
 /******************************************************************************/
 
@@ -455,8 +456,9 @@ void routeFixer(char **arr, data_t size, list_t *route) {
 }
 
 void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
-    list_t *stack;
+    list_t *stack, *new_path;
     stack = make_list_empty();
+    new_path = make_list_empty();
     int exist = 0;
 
     int found = FALSE;
@@ -551,7 +553,7 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             } 
         }
         if(found) break;
-        
+
         //Check right
         if(col+1 < dim.col) {
             finder = cell->next;
@@ -579,17 +581,18 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         if(found) break;
     }
     
-    printf("%d, %d\n", stack->foot->data.row, stack->foot->data.col);
 
     if(found) {
         // Call pathBuilder function
-        //pathBuilder(stack, dim);
+        new_path = pathBuilder(stack, route, dim);
 
-
+        // Update path function
+        updatePath(route, new_path, stack);
+        routePrinter(route);    
 
     }
     
-
+    free_list(new_path);
 }
 
 node_t *blockFinder(char **arr, list_t *route) {
@@ -629,7 +632,7 @@ int checkQueue(int row, int col, list_t *queue) {
     return 0;
 }
 
-void pathBuilder(list_t *queue, data_t size) {
+list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     
     char **grid;
     int i = 0, j = 0;
@@ -659,17 +662,19 @@ void pathBuilder(list_t *queue, data_t size) {
         temp = temp->prev;
     }
 
+    /*
     for(i=0; i < size.row; i++) {
         for(j = 0; j < size.col; j++) {
             printf("%2d ", grid[i][j]);
         }
         printf("\n");
-    }
+    } */
     
     pos = queue->foot->data;
     
-    while(pos.counter != 0) {
+    while(pos.counter != 1) {
 
+        // Check upper cell 
         if((pos.row-1 >= 0) && grid[pos.row - 1][pos.col] == 
         (pos.counter - 1)) {
             info.row = pos.row -1;
@@ -678,6 +683,7 @@ void pathBuilder(list_t *queue, data_t size) {
             pos = info;
             new_path = insert_at_head(new_path, info);
         }
+        // Check bottom cell
         else if((pos.row + 1 < size.row) && grid[pos.row + 1][pos.col] == 
         (pos.counter - 1)) {
             info.row = pos.row + 1;
@@ -686,6 +692,7 @@ void pathBuilder(list_t *queue, data_t size) {
             pos = info;
             new_path = insert_at_head(new_path, info);
         }
+        // Check cell at the left 
         else if((pos.col -1 >= 0) && grid[pos.row][pos.col - 1] == 
         (pos.counter - 1)) {
             info.row = pos.row;
@@ -694,6 +701,7 @@ void pathBuilder(list_t *queue, data_t size) {
             pos = info;
             new_path = insert_at_head(new_path, info);
         }
+        // Check cell at the right
         else if((pos.col < size.col) && grid[pos.row][pos.col + 1] == 
         (pos.counter - 1)) {
             info.row = pos.row;
@@ -704,12 +712,53 @@ void pathBuilder(list_t *queue, data_t size) {
         }
     } 
     
-    
+    return new_path;
+
+    /*
     temp = new_path->head;
     while(temp != NULL) {
         printf("[%d,%d] - %d\n", temp->data.row, temp->data.col, temp->data.counter);
 
         temp = temp->next;
-    }
-         
+    } */
+    freeGrid(grid, size);     
 }
+
+void updatePath(list_t *route, list_t *new_path, list_t* queue) {
+    node_t *start, *end, *temp, *prev;
+    assert(route && new_path && queue);
+
+    start = NULL;
+    end = NULL;
+    temp = route->head;
+
+    while(temp != NULL) {
+        if((temp->data.row == queue->head->data.row) && (temp->data.col == 
+        queue->head->data.col)) {
+            start = temp;
+        }
+
+        if((temp->data.row == queue->foot->data.row) && (temp->data.col == 
+        queue->foot->data.col)) {
+            end = temp;
+        }
+        temp = temp -> next;
+        if(start != NULL && end != NULL) break;
+    }
+
+    temp = start->next;
+    while (temp != end) {
+        // Free list
+        prev = temp;
+        temp = temp -> next;
+        free(prev);
+    }
+
+    // Update route 
+    start->next = new_path->head;
+    new_path->foot->prev = start;
+
+    new_path->foot->next = end;
+    end->prev = new_path->foot;
+}
+
