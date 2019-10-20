@@ -30,8 +30,8 @@
    regardless of whether or not I personally make use of such solutions
    or sought benefit from such actions.
 
-   Signed by: Kaif Ahsan 1068214
-   Dated:     20 October 2019
+   Signed by: Kaif Ahsan 108214
+   Dated:     21 October 2019
 
 */
 
@@ -41,24 +41,28 @@
 #include <stdlib.h>
 
 
-#define INVALID_START -1
-#define INVALID_END -2 
-#define INVALID_MOVE -3 
-#define BLOCKED 4
-#define VALID 5
+#define INVALID_START -1 /* If the first cell of route differs from start call*/
+#define INVALID_END -2   /* If the last cell of route differs from goal call*/
+#define INVALID_MOVE -3  /* If route makes any invalid move*/
+#define BLOCKED 4        /* If route is broken */   
+#define VALID 5          /* If route is passes all the validity conditions */
 #define TRUE 1
 #define FALSE 0
-#define BLOCK "#"
-#define ROUTE "*"
-#define INPUT "$"
-#define BREAK "------------------------------------------------\n"
+#define BLOCK '#'        /* Char to denote block is the route */
+#define ROUTE '*'        /* Char to denote travelled path in the grid */   
+#define INPUT '$'        /* Indicator of routes and new block configuration */
+#define BREAK "------------------------------------------------\n"      
 #define DIVIDER "================================================\n"
 #define STAGE_ZERO "==STAGE 0=======================================\n"
 #define STAGE_ONE "==STAGE 1=======================================\n"
 #define STAGE_TWO "==STAGE 2=======================================\n"
+#define LINE 3           /* Length of input like containing '$' (\0) included */
 
+
+/* Struct declaration */
 typedef struct node node_t;
 
+/* A struct to handle the cell coordinates and counter values */
 typedef struct
 {
     /* data */
@@ -67,13 +71,7 @@ typedef struct
     int counter;
 } data_t;
 
-typedef struct 
-{
-    int row;
-    int col;
-    int counter;
-} traverse_t;
-
+/* Struct for each node of the doubly linked list */
 struct node 
 {
     /* data */
@@ -82,10 +80,10 @@ struct node
     node_t *prev;
 };
 
-
+/* Doubly linked list*/
+/* Program taken from Lecture Slide 7 */
 typedef struct
 {
-    /* Linked list for a block cell */
     node_t *head;
     node_t *foot;
 } list_t;
@@ -123,6 +121,7 @@ void removeRoute(char **arr, list_t *route);
 void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
     list_t *route);
 int readLine(char line[]);
+int mygetchar();
 
 /******************************************************************************/
 
@@ -136,47 +135,58 @@ int main(int argc, char const *argv[])
     char **arr;
     arr = createGrid(&size, &start, &goal);
 
+    // Variables used to process stage 2
+    // An array to hold '$' input commands
+    char line[LINE];
+    // Variable to differentiate stage 1 and stage 2 
+    int stageTwo = FALSE; 
     
-    // Creating the block cells
+    // Creating the blocks & reading from the input
     list_t *blocks;
     blocks = readBlocks(arr);
     
-    // Input the route 
+    // Creating a linked list for the route and taking input
     list_t *route;
     route = readRoute(arr);
 
+    // Printing grid information as part of stage 0
     gridInfoPrinter(arr, size, start, goal, blocks, route);
+    // Checking validity of the route
     status = routeValidator(arr, size, start, goal, route);
 
+    // Stage 1 output formatting
     printf(STAGE_ONE);
+    // Printing contents of the grid onto the screen 
     gridVisualizer(arr, size);
+    // If route has invalid start, end or moves 
     if(status < BLOCKED) {
         printf(DIVIDER);
         return 0;
     }
+    // If route has a block in it
     else if(status == BLOCKED) {
-        // call fixer algorithm
+        // Call fixer function -> Attempt to fix only the first block 
         firstAttempt(arr, size, start, goal, route);
     }
     
-    // Have a function to update new blocks
-    char line[100];
-    int stageTwo = FALSE; 
-
+    // Read in new block configurations
     while(readLine(line) != EOF) {
-        if(line[0] == '$') {
+        if(line[0] == INPUT) {
+            // Denote the initiation of stage 2 -> Full repair will be attempted
             if(!stageTwo) {
                 stageTwo = TRUE;
                 printf(STAGE_TWO);
             }
+            // Update new configuration and proced repair if required
             updateBlocks(arr, route, blocks, size, start, goal);
         }
     }
-    // update grid and free old blocks 
-    // read in new blocks
-    // do routeValidation 
+    
+
+    // If no stage 2 was part of the test print formatter
     if(!stageTwo) printf(DIVIDER);
-    /* remember to free memory */
+
+    /* Freeing memory */
     freeList(blocks);
     freeList(route);
     freeGrid(arr, size);
@@ -376,7 +386,7 @@ list_t *readBlocks(char **arr) {
         coor.col = col;
         coor.row = row;
         blocks = insertFoot(blocks, coor);
-        arr[row][col] = '#';
+        arr[row][col] = BLOCK;
     }
 
     return blocks;
@@ -426,7 +436,7 @@ list_t *readRoute(char **arr) {
     
     scanf("%c\n", &c);
     
-    if(c == '$') {
+    if(c == INPUT) {
         while (scanf("[%d,%d]-> ", &row, &col) == 2) {
             //read in values for the root
             data_t route_coor;
@@ -456,7 +466,7 @@ void routeDraw(char **arr, list_t *route) {
     temp = route->head;
     while(temp != NULL) {
         if(arr[temp->data.row][temp->data.col] == ' ') {
-                arr[temp->data.row][temp->data.col] = '*';
+                arr[temp->data.row][temp->data.col] = ROUTE;
         }
 
         temp = temp->next;
@@ -478,7 +488,7 @@ void removeRoute(char **arr, list_t *route) {
 
     temp = route->head;
     while(temp != NULL) {
-        if(arr[temp->data.row][temp->data.col] == '*') {
+        if(arr[temp->data.row][temp->data.col] == ROUTE) {
             arr[temp->data.row][temp->data.col] = ' ';            
         }
         temp = temp->next;
@@ -686,7 +696,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
             // Check for blocks 
             row = temp->data.row;
             col = temp->data.col;
-            if(arr[row][col] == '#') {
+            if(arr[row][col] == BLOCK) {
                 //printf("There is a block in the route path\n");
                 return  BLOCKED;
             }
@@ -830,7 +840,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             // check if that row already exists in the queue 
             exist = checkQueue(row-1, col, queue);
 
-            if(arr[row-1][col] != '#') {
+            if(arr[row-1][col] != BLOCK) {
                 info.row = row - 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
@@ -840,7 +850,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
                 if(row-1 == finder->data.row && col == finder->data.col && 
-                arr[row-1][col] != '#') {
+                arr[row-1][col] != BLOCK) {
                     found = TRUE;
                     break;
                 }
@@ -855,7 +865,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             finder = cell->next;
             exist = checkQueue(row+1, col, queue);
 
-            if(arr[row+1][col] != '#') {
+            if(arr[row+1][col] != BLOCK) {
                 info.row = row + 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
@@ -865,7 +875,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
                 if(row+1 == finder->data.row && col == finder->data.col && 
-                arr[row+1][col] != '#') {
+                arr[row+1][col] != BLOCK) {
                     found = TRUE;
                     break;
                 }
@@ -880,7 +890,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             
             exist = checkQueue(row, col-1, queue);
 
-            if(arr[row][col-1] != '#') {
+            if(arr[row][col-1] != BLOCK) {
                 info.row = row;
                 info.col = col - 1;
                 info.counter = temp->data.counter + 1;
@@ -891,7 +901,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
                 if(row == finder->data.row && col-1 == finder->data.col &&
-                arr[row][col-1] != '#') {
+                arr[row][col-1] != BLOCK) {
                     found = TRUE;
                     break;
                 }
@@ -906,7 +916,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             finder = cell->next;
             exist = checkQueue(row, col+1, queue);
 
-            if(arr[row][col+1] != '#') {
+            if(arr[row][col+1] != BLOCK) {
                 info.row = row;
                 info.col = col+1;
                 info.counter = temp->data.counter + 1;
@@ -915,7 +925,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
                 if(row == finder->data.row && col+1 == finder->data.col && 
-                arr[row][col+1] != '#') {
+                arr[row][col+1] != BLOCK) {
                     found = TRUE;
                     break;
                 }
@@ -935,10 +945,14 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         // update old route
         updatePath(route, new_path, queue);
 
+        freeList(queue);
         return FALSE; 
     }
-    else return TRUE;
-
+    else {
+        
+        freeList(queue);
+        return TRUE;
+    }
     
 }
 
@@ -968,7 +982,7 @@ node_t *blockFinder(char **arr, list_t *route) {
             col = temp->next->data.col;
         }
 
-        if(arr[row][col] == '#') {
+        if(arr[row][col] == BLOCK) {
             return temp;
         }
 
@@ -1279,7 +1293,7 @@ int readLine(char line[]) {
     // variables to control text inflow 
     int ch, len = 0;
 
-    while((ch = getchar()) != EOF && ch != '\n') {
+    while((ch = mygetchar()) != EOF && ch != '\n') {
         line[len] = ch;
         len++;
     }
@@ -1290,5 +1304,25 @@ int readLine(char line[]) {
     }
     return 0;
 }
+
+/****************************************************************/
+
+/* 
+
+ * Function:  mygetchar
+ * --------------------
+ * Speacial getchar(0) '/r'
+ *  
+ * returns: c after removing /r
+ * 
+ * NOTE: Function imported from Assignment FAQ page 
+ */
+
+int mygetchar() {
+		int c;
+		while ((c=getchar())=='\r') {
+		}
+		return c;
+}	
 
 /* Algoritms are fun */ 
