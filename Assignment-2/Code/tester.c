@@ -3,7 +3,9 @@
 #include <stdlib.h>
 
 
-#define INVALID -1 
+#define INVALID_START -1
+#define INVALID_END -2 
+#define INVALID_MOVE -3 
 #define BLOCKED 4
 #define VALID 5
 #define TRUE 1
@@ -137,7 +139,7 @@ int main(int argc, char const *argv[])
     freeList(blocks);
     freeList(route);
     freeGrid(arr, size);
-
+    printf("\n");
     
 
     return 0;
@@ -275,7 +277,7 @@ list_t *readBlocks(char **arr) {
     list_t *blocks;
     blocks = makeEmptyList(); 
 
-    while (scanf("[%d,%d]\n", &row, &col) == 2)
+    while (scanf("[%d,%d] ", &row, &col) == 2)
     {
         // Taking input until $ sign is reached or end of file. 
        
@@ -434,13 +436,11 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
 
         if(route->head->data.row != start.row || route->head->data.col 
         != start.col) {
-            printf("Initial cell in the route is wrong\n");
             return INVALID;
         }
 
         if(route->foot->data.row != end.row || route->foot->data.col 
         != end.col) {
-            printf("Goal cell in the route is wrong\n");
             return INVALID;
         }
 

@@ -41,7 +41,9 @@
 #include <stdlib.h>
 
 
-#define INVALID -1 
+#define INVALID_START -1
+#define INVALID_END -2 
+#define INVALID_MOVE -3 
 #define BLOCKED 4
 #define VALID 5
 #define TRUE 1
@@ -142,13 +144,14 @@ int main(int argc, char const *argv[])
     // Input the route 
     list_t *route;
     route = readRoute(arr);
-    
+
     gridInfoPrinter(arr, size, start, goal, blocks, route);
     status = routeValidator(arr, size, start, goal, route);
 
     printf(STAGE_ONE);
     gridVisualizer(arr, size);
     if(status < BLOCKED) {
+        printf(DIVIDER);
         return 0;
     }
     else if(status == BLOCKED) {
@@ -534,7 +537,18 @@ void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end,
     printf("The proposed route in the grid is:\n");
     routePrinter(path);
     status = routeValidator(arr, dim, start, end, path);
-    if(status == BLOCKED) {
+
+    // Print status of the current route
+    if(status == INVALID_START) {
+        printf("Initial cell in the route is wrong\n");
+    }
+    else if(status == INVALID_END) {
+        printf("Goal cell in the route is wrong!");
+    } 
+    else if(status == INVALID_MOVE) {
+        printf("There is an illegal move in this route\n");
+    }
+    else if(status == BLOCKED) {
         printf("There is a block on this route!\n");
     }
     else {
@@ -624,14 +638,12 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
 
         if(route->head->data.row != start.row || route->head->data.col 
         != start.col) {
-            printf("Initial cell in the route is wrong\n");
-            return INVALID;
+            return INVALID_START;
         }
 
         if(route->foot->data.row != end.row || route->foot->data.col 
         != end.col) {
-            printf("Goal cell in the route is wrong\n");
-            return INVALID;
+            return INVALID_END;
         }
 
         // Check for illegal move in the route
@@ -646,21 +658,18 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
         {
             // Check the validity of the current node 
             if(temp->data.row > size.row || temp->data.col > size.col){
-                printf("route is outside of the grid.\n"); 
-                return INVALID; 
+                return INVALID_MOVE; 
             }
             
             rowTraverse = temp->data.row - prev.row;
             //printf("%d ", rowTraverse);
             if(rowTraverse > 1 || rowTraverse < -1 ) {
-                printf("route makes an illegal row move\n");
-                return INVALID;
+                return INVALID_MOVE;
             }
 
             colTraverse = temp->data.col - prev.col;
             if(colTraverse > 1 || colTraverse < -1) {
-                printf("route makes an illegal col move\n");
-                return INVALID;
+                return INVALID_MOVE;
             }
 
             prev.row = temp->data.row;
@@ -684,7 +693,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
             temp = temp->next;
 
         }
-    //printf("The route is valid!\n");
+
     return VALID;
 }   
 
