@@ -1,3 +1,41 @@
+/* Solution to comp10002 Assignment 2, 2019 semester 2.
+
+   Authorship Declaration:
+
+   (1) I certify that the program contained in this submission is completely
+   my own individual work, except where explicitly noted by comments that
+   provide details otherwise.  I understand that work that has been developed
+   by another student, or by me in collaboration with other students,
+   or by non-students as a result of request, solicitation, or payment,
+   may not be submitted for assessment in this subject.  I understand that
+   submitting for assessment work developed by or in collaboration with
+   other students or non-students constitutes Academic Misconduct, and
+   may be penalized by mark deductions, or by other penalties determined
+   via the University of Melbourne Academic Honesty Policy, as described
+   at https://academicintegrity.unimelb.edu.au.
+
+   (2) I also certify that I have not provided a copy of this work in either
+   softcopy or hardcopy or any other form to any other student, and nor will
+   I do so until after the marks are released. I understand that providing
+   my work to other students, regardless of my intention or any undertakings
+   made to me by that other student, is also Academic Misconduct.
+
+   (3) I further understand that providing a copy of the assignment
+   specification to any form of code authoring or assignment tutoring
+   service, or drawing the attention of others to such services and code
+   that may have been made available via such a service, may be regarded
+   as Student General Misconduct (interfering with the teaching activities
+   of the University and/or inciting others to commit Academic Misconduct).
+   I understand that an allegation of Student General Misconduct may arise
+   regardless of whether or not I personally make use of such solutions
+   or sought benefit from such actions.
+
+   Signed by: Kaif Ahsan 1068214
+   Dated:     20 October 2019
+
+*/
+
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -80,7 +118,7 @@ void routeDraw(char **arr, list_t *route);
 void removeRoute(char **arr, list_t *route);
 void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
     list_t *route);
-int read_line(char line[]);
+int readLine(char line[]);
 
 /******************************************************************************/
 
@@ -120,7 +158,7 @@ int main(int argc, char const *argv[])
     char line[100];
     int stageTwo = FALSE; 
 
-    while(read_line(line) != EOF) {
+    while(readLine(line) != EOF) {
         if(line[0] == '$') {
             if(!stageTwo) {
                 stageTwo = TRUE;
@@ -425,6 +463,19 @@ void routePrinter(list_t *path) {
     }
 }
 
+/*
+ * Function:  routeValidator
+ * -----------------------
+ * Function to process stage 1: make one attempt to fix the route and fix the 
+ * first broken segement 
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * size: Dimention of the grid
+ * start: Coordinate of starting cell
+ * goal: Coordinates of ending cell
+ * route: Linked list of path taken to reach the destination
+ * 
+ */
 int routeValidator(char **arr, data_t size, data_t start, data_t end, 
     list_t *route) {
 
@@ -498,6 +549,20 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
     return VALID;
 }   
 
+/*
+ * Function:  routeFixer
+ * ---------------------
+ * A recursive function which stops at first fix if its stage 1, else tries to 
+ * do a full repair
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * size: Dimention of the grid
+ * start: Coordinate of starting cell
+ * goal: Coordinates of ending cell
+ * route: Linked list of path taken to reach the destination
+ * firstFix: An integer to denote whether this is Stage 1 or not
+ * 
+ */
 void routeFixer(char **arr, data_t size, data_t start, data_t end, 
     list_t *route, int firstFix) {
 
@@ -534,6 +599,19 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
     free_list(new_path);
 }
 
+/*
+ * Function:  firstAttempt
+ * -----------------------
+ * Function to process stage 1: make one attempt to fix the route and fix the 
+ * first broken segement 
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * size: Dimention of the grid
+ * start: Coordinate of starting cell
+ * goal: Coordinates of ending cell
+ * route: Linked list of path taken to reach the destination
+ * 
+ */
 void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
     list_t *route) {
     int routeFixed = 0;
@@ -558,9 +636,22 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
     } 
 }
 
+/*
+ * Function:  traverseGrid 
+ * -----------------------
+ * Creates a linked list containing counter value starting from the cell right 
+ * before the first block in the route 
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * cell: the cell right before the first block in the route 
+ * route: Linked list of path taken to reach the destination
+ * size: Dimentions of the grid
+ *  
+ * return: returns FALSE if no fix found of the broken route else returns TRUE
+ */
 int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
-    list_t *stack, *new_path;
-    stack = make_list_empty();
+    list_t *queue, *new_path;
+    queue = make_list_empty();
     new_path = make_list_empty();
     int exist = 0;
 
@@ -572,9 +663,9 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     info.row = cell->data.row;
     info.col = cell->data.col;
     info.counter = 0;
-    stack = insert_at_foot(stack, info);
+    queue = insert_at_foot(queue, info);
 
-    temp = stack->head;
+    temp = queue->head;
     
 
     while (temp!=NULL) {
@@ -586,13 +677,13 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         if(row - 1 >= 0) {
             finder = cell->next;
             // check if that row already exists in the queue 
-            exist = checkQueue(row-1, col, stack);
+            exist = checkQueue(row-1, col, queue);
 
             if(arr[row-1][col] != '#') {
                 info.row = row - 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                if(!exist) stack = insert_at_foot(stack, info);
+                if(!exist) queue = insert_at_foot(queue, info);
             }
 
             // Check if new cell is part of the route 
@@ -611,13 +702,13 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         // Check down 
         if(row+1 < dim.row) {
             finder = cell->next;
-            exist = checkQueue(row+1, col, stack);
+            exist = checkQueue(row+1, col, queue);
 
             if(arr[row+1][col] != '#') {
                 info.row = row + 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                if(!exist) stack = insert_at_foot(stack, info);
+                if(!exist) queue = insert_at_foot(queue, info);
             }
 
             // Check if new cell is part of the route 
@@ -636,13 +727,13 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         // Check left 
         if(col-1 >= 0) {
             
-            exist = checkQueue(row, col-1, stack);
+            exist = checkQueue(row, col-1, queue);
 
             if(arr[row][col-1] != '#') {
                 info.row = row;
                 info.col = col - 1;
                 info.counter = temp->data.counter + 1;
-               if(!exist) stack = insert_at_foot(stack, info);
+               if(!exist) queue = insert_at_foot(queue, info);
             }
 
             finder = cell->next;
@@ -662,13 +753,13 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         //Check right
         if(col+1 < dim.col) {
             finder = cell->next;
-            exist = checkQueue(row, col+1, stack);
+            exist = checkQueue(row, col+1, queue);
 
             if(arr[row][col+1] != '#') {
                 info.row = row;
                 info.col = col+1;
                 info.counter = temp->data.counter + 1;
-                if(!exist) stack = insert_at_foot(stack, info);
+                if(!exist) queue = insert_at_foot(queue, info);
             }
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
@@ -689,17 +780,29 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     // return value of found
 
     if(found) {
-        new_path = pathBuilder(stack, route, dim);
+        new_path = pathBuilder(queue, route, dim);
         // update old route
-        updatePath(route, new_path, stack);
+        updatePath(route, new_path, queue);
 
-        return 0; 
+        return FALSE; 
     }
     else return TRUE;
 
     
 }
 
+/*
+ * Function:  blockFinder
+ * ----------------------
+ * Traversed through the route and returns the address of the first block 
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * route: Linked list of path taken to reach the destination
+ * 
+ * return: returns the pointer address of the block 
+ * NOTE: This function can only be called when it is predetermined that a block
+ *       exists in the route. 
+ */
 node_t *blockFinder(char **arr, list_t *route) {
     
     node_t *temp;
@@ -723,6 +826,18 @@ node_t *blockFinder(char **arr, list_t *route) {
     return FALSE;
 }
 
+/*
+ * Function:  checkQueue
+ * -----------------------
+ * Checks for duplicates in the queue 
+ *
+ * row: xycoordinate of the cell being considered
+ * col: y-coordinate of the cell being considered
+ * queue: A linked list containing the queue created from traversing the list 
+ *        and flushing the grid with counter values  
+ *  
+ * return: TRUE if the queue exists previously else FALSE
+ */
 int checkQueue(int row, int col, list_t *queue) {
     node_t *temp;
     temp = queue->head;
@@ -734,9 +849,22 @@ int checkQueue(int row, int col, list_t *queue) {
 
         temp = temp->next;
     }
-    return 0;
+    return FALSE;
 }
 
+/*  
+ * Function:  pathBuilder 
+ * ----------------------
+ * Forms a new route by traversing from the bottom of the queue to the cell 
+ * before the first broken segment
+ * 
+ * queue: A linked list containing the queue created from traversing the list 
+ *        and flushing the grid with counter values 
+ * route: Linked list of path taken to reach the destination
+ * size: Dimentions of the grid
+ * 
+ * return: A new path containing an alternative route
+ */
 list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     
     char **grid;
@@ -814,6 +942,18 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     freeGrid(grid, size);     
 }
 
+/*
+ * Function:  updatePath
+ * ---------------------
+ * Inserts the new built path from the queue into the original route and frees
+ * old segments
+ *
+ * route: Linked list of path taken to reach the destination
+ * new_path: Linked list containing the fixed segment
+ * queue: A linked list containing the queue created from traversing the list 
+ *        and flushing the grid with counter values 
+ * 
+ */
 void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     node_t *start, *end, *temp, *prev;
     assert(route && new_path && queue);
@@ -852,6 +992,14 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     end->prev = new_path->foot;
 }
 
+/*
+ * Function:  gridVisualizer
+ * -------------------------
+ * Prints contents of the Grid on the screen
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * size: Dimentions of the grid  
+ */
 void gridVisualizer(char **grid, data_t size) {
     int i = 0, j = 0, counter = 0;
     
@@ -879,6 +1027,14 @@ void gridVisualizer(char **grid, data_t size) {
     }
 }
 
+/*
+ * Function:  gridEmptier
+ * ----------------------
+ * Fills dynamic 2D grid with ' '
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * dim: Dimentions of the grid
+ */
 void gridEmptier(char **arr, data_t dim) {
     
     int i = 0, j = 0;
@@ -893,6 +1049,20 @@ void gridEmptier(char **arr, data_t dim) {
     }
 }
 
+
+/*
+ * Function:  updateBlocks
+ * -----------------------
+ * reads new block configuration and tries to do a full repart
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * route: Linked list of path taken to reach the destination
+ * blocks: Obstacles on the grid 
+ * size: Dimentions of the grid
+ * start: Coordinate of starting cell
+ * end: Coordinates of ending cell
+ *  
+ */
 void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size, 
     data_t start, data_t end) {
 
@@ -929,7 +1099,18 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     printf(DIVIDER);   
 }
 
-int read_line(char line[]) {
+/*
+ * Function:  read_line
+ * --------------------
+ * reads the text input line by line
+ *
+ *  line: unformatted text input
+ *  
+ * returns: 0 if it reaches the end of line without encountering EOF
+ *           EOF when end of file is reached.
+ */
+
+int readLine(char line[]) {
     // variables to control text inflow 
     int ch, len = 0;
 
@@ -944,3 +1125,5 @@ int read_line(char line[]) {
     }
     return 0;
 }
+
+/* Algoritms are fun */ 
