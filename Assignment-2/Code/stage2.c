@@ -128,12 +128,14 @@ int mygetchar();
 
 int main(int argc, char const *argv[])
 {   
+    
+    // Struct to hold dimensions of grid and coordinates of start and end cell
     data_t size, start, goal;
-    int status = 0; // Initial value needs to be fixed 
-
+    // Variable which holds the condition of the route
+    int status = 0; 
     // Creating a 2D to hold the grid 
-    char **arr;
-    arr = createGrid(&size, &start, &goal);
+    char **grid;
+    grid = createGrid(&size, &start, &goal);
 
     // Variables used to process stage 2
     // An array to hold '$' input commands
@@ -143,21 +145,21 @@ int main(int argc, char const *argv[])
     
     // Creating the blocks & reading from the input
     list_t *blocks;
-    blocks = readBlocks(arr);
+    blocks = readBlocks(grid);
     
     // Creating a linked list for the route and taking input
     list_t *route;
-    route = readRoute(arr);
+    route = readRoute(grid);
 
     // Printing grid information as part of stage 0
-    gridInfoPrinter(arr, size, start, goal, blocks, route);
+    gridInfoPrinter(grid, size, start, goal, blocks, route);
     // Checking validity of the route
-    status = routeValidator(arr, size, start, goal, route);
+    status = routeValidator(grid, size, start, goal, route);
 
     // Stage 1 output formatting
     printf(STAGE_ONE);
     // Printing contents of the grid onto the screen 
-    gridVisualizer(arr, size);
+    gridVisualizer(grid, size);
     // If route has invalid start, end or moves 
     if(status < BLOCKED) {
         printf(DIVIDER);
@@ -166,7 +168,7 @@ int main(int argc, char const *argv[])
     // If route has a block in it
     else if(status == BLOCKED) {
         // Call fixer function -> Attempt to fix only the first block 
-        firstAttempt(arr, size, start, goal, route);
+        firstAttempt(grid, size, start, goal, route);
     }
     
     // Read in new block configurations
@@ -178,7 +180,7 @@ int main(int argc, char const *argv[])
                 printf(STAGE_TWO);
             }
             // Update new configuration and proced repair if required
-            updateBlocks(arr, route, blocks, size, start, goal);
+            updateBlocks(grid, route, blocks, size, start, goal);
         }
     }
     
@@ -189,7 +191,7 @@ int main(int argc, char const *argv[])
     /* Freeing memory */
     freeList(blocks);
     freeList(route);
-    freeGrid(arr, size);
+    freeGrid(grid, size);
     
 
     return 0;
@@ -252,9 +254,13 @@ void freeList(list_t *list) {
  * NOTE: Base function imported from Lecture slides (Lecture 7)
  */
 list_t *insertHead(list_t *list, data_t value) {
+    
+    // Creating a new node 
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
+
+    // Initialise default values 
     new->data = value;
     new->next = NULL;
     new->prev = NULL;
@@ -289,9 +295,13 @@ list_t *insertHead(list_t *list, data_t value) {
  * NOTE: Base function imported from Lecture slides (Lecture 7)
  */
 list_t *insertFoot(list_t *list, data_t value) {
+    
+    // Creating a new node
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
+
+    // Initialise default values 
     new->data = value;
     new->next = NULL;
     new->prev = NULL;
@@ -325,23 +335,29 @@ list_t *insertFoot(list_t *list, data_t value) {
  * return: Pointer to pointer to a character array. 
  */
 char **createGrid(data_t *size, data_t *init, data_t *end) {
+    // Variables which hold dimention of the grid
     int row = 0, col = 0;
+    // Variable to assist in loops
     int i = 0;
+    // x and y coordinates of start cell 
     int irow = 0, icol = 0;
+    // x and y coordinates of goal cell 
     int grow = 0, gcol = 0;
-    char **arr;
+    // 2D grid to store information from the input
+    char **grid;
 
     // Take input of the dimension
     scanf("%dx%d\n", &row, &col);
     size->row = row;
     size->col = col;
 
-    arr = (char**)malloc(row * sizeof(char*));
-    assert(arr != NULL);
+    // Dynamic allocation of 2D grid based on input 
+    grid = (char**)malloc(row * sizeof(char*));
+    assert(grid != NULL);
     for(i=0; i < row; i++)
     {
-        arr[i] = (char*)malloc(col * sizeof(char*));
-        assert(arr[i] != NULL);
+        grid[i] = (char*)malloc(col * sizeof(char*));
+        assert(grid[i] != NULL);
     }    
 
     // Inputting coordinates of I and G
@@ -353,13 +369,13 @@ char **createGrid(data_t *size, data_t *init, data_t *end) {
     end->col = gcol;
 
     // Identify I and G in the grid 
-    arr[irow][icol] = 'I';
-    arr[grow][gcol] = 'G';
+    grid[irow][icol] = 'I';
+    grid[grow][gcol] = 'G';
 
     // Filling up the space 
-    gridEmptier(arr, *size);
+    gridEmptier(grid, *size);
 
-    return arr;
+    return grid;
 }
 
 /******************************************************************************/
@@ -373,19 +389,22 @@ char **createGrid(data_t *size, data_t *init, data_t *end) {
  * return: Returns a linked list containing the blocks in the grid 
  */
 list_t *readBlocks(char **arr) {
+    // Variables for x and y coordinates of the block 
     int row = 0, col = 0;
     data_t coor;
 
+    // Creating list to hold the blocks 
     list_t *blocks;
     blocks = makeEmptyList(); 
+    assert(blocks != NULL);
 
     while (scanf("[%d,%d]\n", &row, &col) == 2)
     {
         // Taking input until $ sign is reached or end of file. 
-       
         coor.col = col;
         coor.row = row;
         blocks = insertFoot(blocks, coor);
+        // Updating the cell block in the grid
         arr[row][col] = BLOCK;
     }
 
@@ -405,12 +424,13 @@ list_t *readBlocks(char **arr) {
  */
 
 void removeBlocks(list_t *blocks, char **arr) {
+    // Variable for traversing the blocks without consuming it
     node_t *temp;
     
     temp = blocks->head;
     while (temp != NULL)
     {
-        // Adding # in the main grid
+        // Removing # in the main grid
         arr[temp->data.row][temp->data.col] = ' ';
         temp = temp->next;
     }
@@ -427,6 +447,7 @@ void removeBlocks(list_t *blocks, char **arr) {
  * return: Linked list containing the current route
  */
 list_t *readRoute(char **arr) {
+    // x and y coordinates of the route cell 
     int row = 0, col = 0;
     char c;
     list_t *route;
@@ -436,15 +457,17 @@ list_t *readRoute(char **arr) {
     
     scanf("%c\n", &c);
     
+    // start inputting if '$' indicator is present 
     if(c == INPUT) {
         while (scanf("[%d,%d]-> ", &row, &col) == 2) {
-            //read in values for the root
+            //read in values for the route
             data_t route_coor;
             route_coor.row = row;
             route_coor.col = col;
             route = insertFoot(route, route_coor);
         }
     }
+    // Draw the route onto the grid
     routeDraw(arr, route);
 
     return route;
@@ -949,7 +972,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         return FALSE; 
     }
     else {
-        
+
         freeList(queue);
         return TRUE;
     }
