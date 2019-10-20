@@ -88,11 +88,10 @@ typedef struct
 
 /******************************************************************************/
 /* Function prototypes */
-list_t *make_list_empty (void);
-int is_list_empty(list_t *list);
-void free_list(list_t *list);
-list_t *insert_at_head(list_t *list, data_t value);
-list_t *insert_at_foot(list_t *list, data_t value);
+list_t *makeEmptyList (void);
+void freeList(list_t *list);
+list_t *insertHead(list_t *list, data_t value);
+list_t *insertFoot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
 void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size, 
@@ -172,8 +171,8 @@ int main(int argc, char const *argv[])
     // do routeValidation 
     if(!stageTwo) printf(DIVIDER);
     /* remember to free memory */
-    free_list(blocks);
-    free_list(route);
+    freeList(blocks);
+    freeList(route);
     freeGrid(arr, size);
 
     
@@ -184,7 +183,15 @@ int main(int argc, char const *argv[])
 
 /******************************************************************************/
 
-list_t *make_list_empty (void) {
+/*
+ * Function:  makeEmptyList
+ * --------------------------
+ * Function to create an empty list and return the address 
+ * 
+ * NOTE: Function imported from Lecture slides (Lecture 7)
+ */
+
+list_t *makeEmptyList (void) {
     list_t *list;
     list = (list_t*)malloc(sizeof(*list));
     assert(list!= NULL);
@@ -192,19 +199,17 @@ list_t *make_list_empty (void) {
     return list;
 }
 
-/* 
-    A function to create an empty list which will be used as a handle in the 
-    calling function. 
-*/
-int is_list_empty(list_t *list) {
-    assert(list != NULL);
-    return list->head == NULL;
-}
-
+/******************************************************************************/
 /*
-    A function to free the memory of a malloc call 
-*/
-void free_list(list_t *list) {
+ * Function:  freeList
+ * --------------------------
+ * Function to free a list_t type linked list
+ *
+ * list: The list which modified 
+ * 
+ * NOTE: Function imported from Lecture slides (Lecture 7)
+ */
+void freeList(list_t *list) {
     node_t *curr, *prev;
     assert(list != NULL);
     curr = list -> head;
@@ -218,7 +223,20 @@ void free_list(list_t *list) {
     free(list);
 };
 
-list_t *insert_at_head(list_t *list, data_t value) {
+/******************************************************************************/
+/*
+ * Function:  insertFoot
+ * --------------------------
+ * Function to insert item at the top of a doubly linked list
+ *
+ * list: The list which modified 
+ * value: The data which will be added to the list 
+ * 
+ * return: Pointer address of the modified list
+ * 
+ * NOTE: Base function imported from Lecture slides (Lecture 7)
+ */
+list_t *insertHead(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
@@ -241,10 +259,21 @@ list_t *insert_at_head(list_t *list, data_t value) {
     
     return list;
 }
+
+/******************************************************************************/
 /*
-    A function to make insertion at the linked list's foot 
-*/
-list_t *insert_at_foot(list_t *list, data_t value) {
+ * Function:  insertFoot
+ * --------------------------
+ * Function to append item at the end of a doubly linked list
+ *
+ * list: The list which modified 
+ * value: The data which will be added to the list 
+ * 
+ * return: Pointer address of the modified list
+ * 
+ * NOTE: Base function imported from Lecture slides (Lecture 7)
+ */
+list_t *insertFoot(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
@@ -268,6 +297,18 @@ list_t *insert_at_foot(list_t *list, data_t value) {
     return list;
 }
 
+/******************************************************************************/
+/*
+ * Function:  createGrid
+ * --------------------------
+ * Function to create dynamic 2D grid based of input
+ *
+ * size: Dimention of the grid
+ * init: Coordinate of starting cell
+ * end: Coordinates of ending cell
+ * 
+ * return: Pointer to pointer to a character array. 
+ */
 char **createGrid(data_t *size, data_t *init, data_t *end) {
     int row = 0, col = 0;
     int i = 0;
@@ -306,12 +347,22 @@ char **createGrid(data_t *size, data_t *init, data_t *end) {
     return arr;
 }
 
+/******************************************************************************/
+/*
+ * Function:  readBlocks 
+ * --------------------------
+ * Function to read the blocks from the input and store as a linked list
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * 
+ * return: Returns a linked list containing the blocks in the grid 
+ */
 list_t *readBlocks(char **arr) {
     int row = 0, col = 0;
     data_t coor;
 
     list_t *blocks;
-    blocks = make_list_empty(); 
+    blocks = makeEmptyList(); 
 
     while (scanf("[%d,%d]\n", &row, &col) == 2)
     {
@@ -319,12 +370,24 @@ list_t *readBlocks(char **arr) {
        
         coor.col = col;
         coor.row = row;
-        blocks = insert_at_foot(blocks, coor);
+        blocks = insertFoot(blocks, coor);
         arr[row][col] = '#';
     }
 
     return blocks;
 }
+
+/******************************************************************************/
+/*
+ * Function:  removeBlocks
+ * -----------------------
+ * Function to remove blocks from the grid and prepare grid for new blocks 
+ * orientation
+ * 
+ * blocks: Linked list containing the obstacles in the grid
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * 
+ */
 
 void removeBlocks(list_t *blocks, char **arr) {
     node_t *temp;
@@ -338,12 +401,22 @@ void removeBlocks(list_t *blocks, char **arr) {
     }
 }
 
+/******************************************************************************/
+/*
+ * Function:  gridInfoPrinter
+ * --------------------------
+ * Function to read routes from the input
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * 
+ * return: Linked list containing the current route
+ */
 list_t *readRoute(char **arr) {
     int row = 0, col = 0;
     char c;
     list_t *route;
     
-    route = make_list_empty();
+    route = makeEmptyList();
     assert(route != NULL);
     
     scanf("%c\n", &c);
@@ -354,7 +427,7 @@ list_t *readRoute(char **arr) {
             data_t route_coor;
             route_coor.row = row;
             route_coor.col = col;
-            route = insert_at_foot(route, route_coor);
+            route = insertFoot(route, route_coor);
         }
     }
     routeDraw(arr, route);
@@ -362,6 +435,16 @@ list_t *readRoute(char **arr) {
     return route;
 }
 
+/******************************************************************************/
+/*
+ * Function:  routeDraw
+ * ---------------------
+ * Function to draw current route onto the grid
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * route: Linked list of path taken to reach the destination
+ * 
+ */
 void routeDraw(char **arr, list_t *route) {
     node_t *temp;
 
@@ -375,6 +458,16 @@ void routeDraw(char **arr, list_t *route) {
     }
 }
 
+/******************************************************************************/
+/*
+ * Function:  removeRoute
+ * -----------------------
+ * Function to remove the route from the grid 
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * route: Linked list of path taken to reach the destination
+ * 
+ */
 void removeRoute(char **arr, list_t *route) {
     node_t *temp;
 
@@ -388,6 +481,16 @@ void removeRoute(char **arr, list_t *route) {
 
 }
 
+/******************************************************************************/
+/*
+ * Function:  gridInfoPrinter
+ * --------------------------
+ * Function to free a dynamic 2D grid
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * size: Dimention of the grid
+ * 
+ */
 void freeGrid(char **arr, data_t size) {
     int i = 0;
     for(i = 0; i < size.row; i++)
@@ -398,6 +501,20 @@ void freeGrid(char **arr, data_t size) {
     free(arr);
 }
 
+/******************************************************************************/
+/*
+ * Function:  gridInfoPrinter
+ * --------------------------
+ * Function to process stage 0 info printing of the input
+ *
+ * arr: Dynamic 2D array to hold all contents of the grid
+ * dim: Dimention of the grid
+ * start: Coordinate of starting cell
+ * end: Coordinates of ending cell
+ * barrier: Linked list of the blocks in the grid 
+ * path: Linked list of path taken to reach the destination
+ * 
+ */
 void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end, 
     list_t *barrier, list_t *path) {
     
@@ -423,6 +540,16 @@ void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end,
     }
 }
 
+/******************************************************************************/
+/*
+ * Function:  listItemCount
+ * -----------------------
+ * Function which counts the number of nodes in a linked list 
+ *
+ * list: The linked list containing the nodes to be counted 
+ * 
+ * return: The number of nodes
+ */
 int listItemCount(list_t *list) {
     int count = 0;
     node_t *temp;
@@ -438,6 +565,15 @@ int listItemCount(list_t *list) {
     return count;
 }
 
+/******************************************************************************/
+/*
+ * Function:  
+ * -----------------------
+ * Prints the route grid onto the screen - upto 5 coordinates at a time  
+ * 
+ * path: Linked list of path taken to reach the destination
+ * 
+ */
 void routePrinter(list_t *path) {
     int count = 0;
     node_t *temp;
@@ -463,11 +599,12 @@ void routePrinter(list_t *path) {
     }
 }
 
+/******************************************************************************/
 /*
  * Function:  routeValidator
  * -----------------------
  * Function to process stage 1: make one attempt to fix the route and fix the 
- * first broken segement 
+ * first broken segment 
  *
  * arr: Dynamic 2D array to hold all contents of the grid
  * size: Dimention of the grid
@@ -549,6 +686,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
     return VALID;
 }   
 
+/******************************************************************************/
 /*
  * Function:  routeFixer
  * ---------------------
@@ -569,7 +707,7 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
     node_t *broken_segment;
     list_t *new_path;
     int notFixed = FALSE, status = 0;
-    new_path = make_list_empty();
+    new_path = makeEmptyList();
     // Pass route into blockFinder function and return block coordinate
     broken_segment = blockFinder(arr, route);
     removeRoute(arr, route);
@@ -596,9 +734,10 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
         }
     }
 
-    free_list(new_path);
+    freeList(new_path);
 }
 
+/******************************************************************************/
 /*
  * Function:  firstAttempt
  * -----------------------
@@ -636,6 +775,7 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
     } 
 }
 
+/******************************************************************************/
 /*
  * Function:  traverseGrid 
  * -----------------------
@@ -651,8 +791,8 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
  */
 int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     list_t *queue, *new_path;
-    queue = make_list_empty();
-    new_path = make_list_empty();
+    queue = makeEmptyList();
+    new_path = makeEmptyList();
     int exist = 0;
 
     int found = FALSE;
@@ -663,7 +803,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     info.row = cell->data.row;
     info.col = cell->data.col;
     info.counter = 0;
-    queue = insert_at_foot(queue, info);
+    queue = insertFoot(queue, info);
 
     temp = queue->head;
     
@@ -683,7 +823,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row - 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                if(!exist) queue = insert_at_foot(queue, info);
+                if(!exist) queue = insertFoot(queue, info);
             }
 
             // Check if new cell is part of the route 
@@ -708,7 +848,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row + 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                if(!exist) queue = insert_at_foot(queue, info);
+                if(!exist) queue = insertFoot(queue, info);
             }
 
             // Check if new cell is part of the route 
@@ -733,7 +873,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row;
                 info.col = col - 1;
                 info.counter = temp->data.counter + 1;
-               if(!exist) queue = insert_at_foot(queue, info);
+               if(!exist) queue = insertFoot(queue, info);
             }
 
             finder = cell->next;
@@ -759,7 +899,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row;
                 info.col = col+1;
                 info.counter = temp->data.counter + 1;
-                if(!exist) queue = insert_at_foot(queue, info);
+                if(!exist) queue = insertFoot(queue, info);
             }
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
@@ -791,6 +931,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     
 }
 
+/******************************************************************************/
 /*
  * Function:  blockFinder
  * ----------------------
@@ -826,6 +967,7 @@ node_t *blockFinder(char **arr, list_t *route) {
     return FALSE;
 }
 
+/******************************************************************************/
 /*
  * Function:  checkQueue
  * -----------------------
@@ -852,6 +994,7 @@ int checkQueue(int row, int col, list_t *queue) {
     return FALSE;
 }
 
+/******************************************************************************/
 /*  
  * Function:  pathBuilder 
  * ----------------------
@@ -872,7 +1015,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     node_t *temp;
     data_t pos, info;
     list_t *new_path;
-    new_path = make_list_empty();
+    new_path = makeEmptyList();
     
     grid = (char**)malloc(size.row * sizeof(char*));
     assert(grid != NULL);
@@ -906,7 +1049,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
         // Check bottom cell
         else if((pos.row + 1 < size.row) && grid[pos.row + 1][pos.col] == 
@@ -915,7 +1058,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
         // Check cell at the left 
         else if((pos.col -1 >= 0) && grid[pos.row][pos.col - 1] == 
@@ -924,7 +1067,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col - 1;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
         // Check cell at the right
         else if((pos.col < size.col) && grid[pos.row][pos.col + 1] == 
@@ -933,7 +1076,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col + 1;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
     } 
     
@@ -942,6 +1085,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     freeGrid(grid, size);     
 }
 
+/******************************************************************************/
 /*
  * Function:  updatePath
  * ---------------------
@@ -992,6 +1136,7 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     end->prev = new_path->foot;
 }
 
+/******************************************************************************/
 /*
  * Function:  gridVisualizer
  * -------------------------
@@ -1027,6 +1172,7 @@ void gridVisualizer(char **grid, data_t size) {
     }
 }
 
+/******************************************************************************/
 /*
  * Function:  gridEmptier
  * ----------------------
@@ -1049,7 +1195,7 @@ void gridEmptier(char **arr, data_t dim) {
     }
 }
 
-
+/******************************************************************************/
 /*
  * Function:  updateBlocks
  * -----------------------
@@ -1070,7 +1216,7 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     int status = 0;
     // Remove old exisitng blocks 
     removeBlocks(blocks, arr);
-    free_list(blocks);
+    freeList(blocks);
     // Read in new blocks
     blocks = readBlocks(arr);
     
@@ -1099,6 +1245,7 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     printf(DIVIDER);   
 }
 
+/******************************************************************************/
 /*
  * Function:  read_line
  * --------------------

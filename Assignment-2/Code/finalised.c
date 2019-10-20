@@ -39,8 +39,8 @@ typedef struct
 /* Function prototypes */
 list_t *make_list_empty (void);
 int is_list_empty(list_t *list);
-void free_list(list_t *list);
-list_t *insert_at_foot(list_t *list, data_t value);
+void freeList(list_t *list);
+list_t *insertFoot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
 void updateBlocks(list_t *blocks, char **arr);
@@ -86,8 +86,8 @@ int main(int argc, char const *argv[])
     }
 
     /* remember to free memory */
-    free_list(blocks);
-    free_list(route);
+    freeList(blocks);
+    freeList(route);
     freeGrid(arr, size);
 
     
@@ -118,7 +118,7 @@ int is_list_empty(list_t *list) {
 /*
     A function to free the memory of a malloc call 
 */
-void free_list(list_t *list) {
+void freeList(list_t *list) {
     node_t *curr, *prev;
     assert(list != NULL);
     curr = list -> head;
@@ -133,7 +133,7 @@ void free_list(list_t *list) {
 };
 
 
-list_t *insert_at_foot(list_t *list, data_t value) {
+list_t *insertFoot(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
@@ -211,7 +211,7 @@ list_t *readBlocks(char **arr) {
        
         coor.col = col;
         coor.row = row;
-        blocks = insert_at_foot(blocks, coor);
+        blocks = insertFoot(blocks, coor);
         arr[row][col] = '#';
     }
 
@@ -246,7 +246,7 @@ list_t *readRoute(char **arr) {
             data_t route_coor;
             route_coor.row = row;
             route_coor.col = col;
-            route = insert_at_foot(route, route_coor);
+            route = insertFoot(route, route_coor);
             if(arr[row][col] == ' ') {
                 arr[row][col] = '*';
             }

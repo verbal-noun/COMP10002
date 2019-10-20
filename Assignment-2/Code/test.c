@@ -30,7 +30,7 @@ typedef struct
 } list_t;
 
 list_t 
-*make_list_empty (void) {
+*makeEmptyList (void) {
     list_t *list;
     list = (list_t*)malloc(sizeof(*list));
     assert(list!= NULL);
@@ -50,7 +50,7 @@ int is_list_empty(list_t *list) {
 /*
     A function to free the memory of a malloc call 
 */
-void free_list(list_t *list) {
+void freeList(list_t *list) {
     node_t *curr, *prev;
     assert(list != NULL);
     curr = list -> head;
@@ -65,7 +65,7 @@ void free_list(list_t *list) {
 };
 
 
-list_t *insert_at_foot(list_t *list, data_t value) {
+list_t *insertFoot(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);

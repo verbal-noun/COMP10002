@@ -50,11 +50,11 @@ typedef struct
 
 /******************************************************************************/
 /* Function prototypes */
-list_t *make_list_empty (void);
+list_t *makeEmptyList (void);
 int is_list_empty(list_t *list);
-void free_list(list_t *list);
-list_t *insert_at_head(list_t *list, data_t value);
-list_t *insert_at_foot(list_t *list, data_t value);
+void freeList(list_t *list);
+list_t *insertHead(list_t *list, data_t value);
+list_t *insertFoot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
 void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size, 
@@ -134,8 +134,8 @@ int main(int argc, char const *argv[])
     // do routeValidation 
     if(!stageTwo) printf(DIVIDER);
     /* remember to free memory */
-    free_list(blocks);
-    free_list(route);
+    freeList(blocks);
+    freeList(route);
     freeGrid(arr, size);
 
     
@@ -146,7 +146,7 @@ int main(int argc, char const *argv[])
 
 /******************************************************************************/
 
-list_t *make_list_empty (void) {
+list_t *makeEmptyList (void) {
     list_t *list;
     list = (list_t*)malloc(sizeof(*list));
     assert(list!= NULL);
@@ -166,7 +166,7 @@ int is_list_empty(list_t *list) {
 /*
     A function to free the memory of a malloc call 
 */
-void free_list(list_t *list) {
+void freeList(list_t *list) {
     node_t *curr, *prev;
     assert(list != NULL);
     curr = list -> head;
@@ -180,7 +180,7 @@ void free_list(list_t *list) {
     free(list);
 };
 
-list_t *insert_at_head(list_t *list, data_t value) {
+list_t *insertHead(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
@@ -206,7 +206,7 @@ list_t *insert_at_head(list_t *list, data_t value) {
 /*
     A function to make insertion at the linked list's foot 
 */
-list_t *insert_at_foot(list_t *list, data_t value) {
+list_t *insertFoot(list_t *list, data_t value) {
     node_t *new;
     new = (node_t*)malloc(sizeof(*new));
     assert(new != NULL && list != NULL);
@@ -273,7 +273,7 @@ list_t *readBlocks(char **arr) {
     data_t coor;
 
     list_t *blocks;
-    blocks = make_list_empty(); 
+    blocks = makeEmptyList(); 
 
     while (scanf("[%d,%d]\n", &row, &col) == 2)
     {
@@ -281,7 +281,7 @@ list_t *readBlocks(char **arr) {
        
         coor.col = col;
         coor.row = row;
-        blocks = insert_at_foot(blocks, coor);
+        blocks = insertFoot(blocks, coor);
         arr[row][col] = '#';
     }
 
@@ -305,7 +305,7 @@ list_t *readRoute(char **arr) {
     char c;
     list_t *route;
     
-    route = make_list_empty();
+    route = makeEmptyList();
     assert(route != NULL);
     
     scanf("%c\n", &c);
@@ -316,7 +316,7 @@ list_t *readRoute(char **arr) {
             data_t route_coor;
             route_coor.row = row;
             route_coor.col = col;
-            route = insert_at_foot(route, route_coor);
+            route = insertFoot(route, route_coor);
         }
     }
     routeDraw(arr, route);
@@ -504,7 +504,7 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
     node_t *broken_segment;
     list_t *new_path;
     int notFixed = FALSE, status = 0;
-    new_path = make_list_empty();
+    new_path = makeEmptyList();
     // Pass route into blockFinder function and return block coordinate
     broken_segment = blockFinder(arr, route);
     removeRoute(arr, route);
@@ -531,7 +531,7 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
         }
     }
 
-    free_list(new_path);
+    freeList(new_path);
 }
 
 void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
@@ -560,8 +560,8 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
 
 int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     list_t *stack, *new_path;
-    stack = make_list_empty();
-    new_path = make_list_empty();
+    stack = makeEmptyList();
+    new_path = makeEmptyList();
     int exist = 0;
 
     int found = FALSE;
@@ -572,7 +572,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     info.row = cell->data.row;
     info.col = cell->data.col;
     info.counter = 0;
-    stack = insert_at_foot(stack, info);
+    stack = insertFoot(stack, info);
 
     temp = stack->head;
     
@@ -592,7 +592,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row - 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                if(!exist) stack = insert_at_foot(stack, info);
+                if(!exist) stack = insertFoot(stack, info);
             }
 
             // Check if new cell is part of the route 
@@ -617,7 +617,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row + 1;
                 info.col = col;
                 info.counter = temp->data.counter + 1;
-                if(!exist) stack = insert_at_foot(stack, info);
+                if(!exist) stack = insertFoot(stack, info);
             }
 
             // Check if new cell is part of the route 
@@ -642,7 +642,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row;
                 info.col = col - 1;
                 info.counter = temp->data.counter + 1;
-               if(!exist) stack = insert_at_foot(stack, info);
+               if(!exist) stack = insertFoot(stack, info);
             }
 
             finder = cell->next;
@@ -668,7 +668,7 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
                 info.row = row;
                 info.col = col+1;
                 info.counter = temp->data.counter + 1;
-                if(!exist) stack = insert_at_foot(stack, info);
+                if(!exist) stack = insertFoot(stack, info);
             }
             // Check if new cell is part of the route 
             while(finder!=NULL && !exist) {
@@ -744,7 +744,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     node_t *temp;
     data_t pos, info;
     list_t *new_path;
-    new_path = make_list_empty();
+    new_path = makeEmptyList();
     
     grid = (char**)malloc(size.row * sizeof(char*));
     assert(grid != NULL);
@@ -778,7 +778,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
         // Check bottom cell
         else if((pos.row + 1 < size.row) && grid[pos.row + 1][pos.col] == 
@@ -787,7 +787,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
         // Check cell at the left 
         else if((pos.col -1 >= 0) && grid[pos.row][pos.col - 1] == 
@@ -796,7 +796,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col - 1;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
         // Check cell at the right
         else if((pos.col < size.col) && grid[pos.row][pos.col + 1] == 
@@ -805,7 +805,7 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
             info.col = pos.col + 1;
             info.counter = pos.counter - 1;
             pos = info;
-            new_path = insert_at_head(new_path, info);
+            new_path = insertHead(new_path, info);
         }
     } 
     
@@ -900,7 +900,7 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     int status = 0;
     // Remove old exisitng blocks 
     removeBlocks(blocks, arr);
-    free_list(blocks);
+    freeList(blocks);
     // Read in new blocks
     blocks = readBlocks(arr);
     
