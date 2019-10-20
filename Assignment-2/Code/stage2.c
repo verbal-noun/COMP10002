@@ -5,6 +5,7 @@
 
 #define INVALID -1 
 #define BLOCKED 4
+#define VALID 5
 #define TRUE 1
 #define FALSE 0
 #define BLOCK "#"
@@ -110,25 +111,28 @@ int main(int argc, char const *argv[])
     if(status < BLOCKED) {
         return 0;
     }
-    if(status == BLOCKED) {
+    else if(status == BLOCKED) {
         // call fixer algorithm
         firstAttempt(arr, size, start, goal, route);
     }
-
+    
     // Have a function to update new blocks
     char line[100];
-    int counter = 0;
+    int stageTwo = FALSE; 
 
     while(read_line(line) != EOF) {
-        counter++;
         if(line[0] == '$') {
+            if(!stageTwo) {
+                stageTwo = TRUE;
+                printf("==STAGE 2=======================================");
+            }
             updateBlocks(arr, route, blocks, size, start, goal);
         }
     }
     // update grid and free old blocks 
     // read in new blocks
     // do routeValidation 
-
+    if(!stageTwo) printf(DIVIDER);
     /* remember to free memory */
     free_list(blocks);
     free_list(route);
@@ -491,7 +495,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
 
         }
     //printf("The route is valid!\n");
-    return TRUE;
+    return VALID;
 }   
 
 void routeFixer(char **arr, data_t size, data_t start, data_t end, 
@@ -537,32 +541,20 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
     routeFixer(arr, size, start, goal, route, 1);
     routeFixed = routeValidator(arr, size, start, goal, route);
     // Visualise the route 
-    if(routeFixed == TRUE) {
+    if(routeFixed == VALID) {
         printf(BREAK);
         gridVisualizer(arr, size);
         printf(BREAK);
         routePrinter(route);
         printf("The route is valid!\n");
-        printf(DIVIDER);
     }
-    // Proceed to next stage
     else {
-        /*
+        
+        printf(BREAK);
         gridVisualizer(arr, size);
-        printf("==STAGE 2======================================\n");
-        routeFixer(arr, size, start, goal, route, 0);
-        routeFixed = routeValidator(arr, size, start, goal, route);
-
-        if(routeFixed == TRUE) {
-            gridVisualizer(arr, size);
-            printf(BREAK);
-            routePrinter(route);
-            printf("The route is valid!\n");
-        }
-        else {
-            gridVisualizer(arr, size);
-            printf("The route cannot be fixed.\n");
-        } */
+        printf(BREAK);
+        routePrinter(route);
+        printf("There is a block in this route!\n");
     } 
 }
 
@@ -913,6 +905,7 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     blocks = readBlocks(arr);
     
     //visualise the grid
+    printf("\n");
     gridVisualizer(arr, size);
     printf(BREAK);
     // Validate the route 
@@ -922,9 +915,18 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
         routeFixer(arr, size, start, end, route, FALSE);
     }
 
+    routeDraw(arr, route);
     gridVisualizer(arr, size);
-    printf(DIVIDER);
-    printf("\n");
+    printf(BREAK);
+    routePrinter(route);
+    status = routeValidator(arr, size, start, end, route);
+    if(status == BLOCKED) {
+        printf("The route cannot be repaired!\n");
+    }
+    else {
+        printf("The route is valid!\n");
+    }
+    printf(DIVIDER);   
 }
 
 int read_line(char line[]) {
