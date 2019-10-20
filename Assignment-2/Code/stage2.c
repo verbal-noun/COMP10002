@@ -10,6 +10,8 @@
 #define BLOCK "#"
 #define ROUTE "*"
 #define INPUT "$"
+#define BREAK "------------------------------------------------\n"
+#define DIVIDER "================================================"
 
 typedef struct node node_t;
 
@@ -57,19 +59,25 @@ list_t *readBlocks(char **arr);
 void updateBlocks(list_t *blocks, char **arr);
 list_t *readRoute(char **arr);
 void freeGrid(char **arr, data_t size);
-void gridInfoPrinter(data_t dim, data_t start, data_t end, list_t *barrier, 
-    list_t *path);
+void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end, 
+    list_t *barrier, list_t *path);
 int listItemCount(list_t *list);
 void routePrinter(list_t *path);
 int routeValidator(char **arr, data_t size, data_t start, data_t end, 
     list_t *route);
 node_t *blockFinder(char **arr, list_t *route);
-void routeFixer(char **arr, data_t size_t, list_t *route);
-void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim);
+void routeFixer(char **arr, data_t size, data_t start, data_t end, 
+    list_t *route, int firstFix);
+int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim);
 int checkQueue(int row, int col, list_t *queue);
 list_t *pathBuilder(list_t *queue, list_t *route, data_t size);
 void updatePath(list_t *route, list_t *new_path, list_t* queue);
 void gridVisualizer(char **grid, data_t size);
+void gridEmptier(char **arr, data_t dim);
+void routeDraw(char **arr, list_t *route);
+void removeRoute(char **arr, list_t *route);
+void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
+    list_t *route);
 
 /******************************************************************************/
 
@@ -92,20 +100,24 @@ int main(int argc, char const *argv[])
     list_t *route;
     route = readRoute(arr);
     
-    gridInfoPrinter(size, start, goal, blocks, route);
+    gridInfoPrinter(arr, size, start, goal, blocks, route);
     status = routeValidator(arr, size, start, goal, route);
-    
-    printf("==STAGE 1======================================\n");
+
+    printf("==STAGE 1=======================================\n");
     gridVisualizer(arr, size);
+    if(status < BLOCKED) {
+        return 0;
+    }
     if(status == BLOCKED) {
         // call fixer algorithm
-        routeFixer(arr, size, route);
-        // get result from route fixer
-        // if route can be fixed -> print fixed route 
-        // if route cannot be fixed then move one to new stage  
+        firstAttempt(arr, size, start, goal, route);
     }
 
-    // Hava a function to update new blocks
+    // Have a function to update new blocks
+
+    // update grid and free old blocks 
+    // read in new blocks
+    // do routeValidation 
 
     /* remember to free memory */
     free_list(blocks);
@@ -206,7 +218,7 @@ list_t *insert_at_foot(list_t *list, data_t value) {
 
 char **createGrid(data_t *size, data_t *init, data_t *end) {
     int row = 0, col = 0;
-    int i = 0, j =0;
+    int i = 0;
     int irow = 0, icol = 0;
     int grow = 0, gcol = 0;
     char **arr;
@@ -224,15 +236,6 @@ char **createGrid(data_t *size, data_t *init, data_t *end) {
         assert(arr[i] != NULL);
     }    
 
-    // Filling up the space 
-    for(i=0; i <row; i++) 
-    {
-        for(j=0;j<col;j++) 
-        {
-            arr[i][j] = ' ';
-        }
-    }
-
     // Inputting coordinates of I and G
     scanf("[%d,%d]\n", &irow, &icol);
     init->row = irow;
@@ -244,6 +247,9 @@ char **createGrid(data_t *size, data_t *init, data_t *end) {
     // Identify I and G in the grid 
     arr[irow][icol] = 'I';
     arr[grow][gcol] = 'G';
+
+    // Filling up the space 
+    gridEmptier(arr, *size);
 
     return arr;
 }
@@ -297,13 +303,37 @@ list_t *readRoute(char **arr) {
             route_coor.row = row;
             route_coor.col = col;
             route = insert_at_foot(route, route_coor);
-            if(arr[row][col] == ' ') {
-                arr[row][col] = '*';
-            }
         }
     }
+    routeDraw(arr, route);
 
     return route;
+}
+
+void routeDraw(char **arr, list_t *route) {
+    node_t *temp;
+
+    temp = route->head;
+    while(temp != NULL) {
+        if(arr[temp->data.row][temp->data.col] == ' ') {
+                arr[temp->data.row][temp->data.col] = '*';
+        }
+
+        temp = temp->next;
+    }
+}
+
+void removeRoute(char **arr, list_t *route) {
+    node_t *temp;
+
+    temp = route->head;
+    while(temp != NULL) {
+        if(arr[temp->data.row][temp->data.col] == '*') {
+            arr[temp->data.row][temp->data.col] = ' ';            
+        }
+        temp = temp->next;
+    }
+
 }
 
 void freeGrid(char **arr, data_t size) {
@@ -316,10 +346,11 @@ void freeGrid(char **arr, data_t size) {
     free(arr);
 }
 
-void gridInfoPrinter(data_t dim, data_t start, data_t end, list_t *barrier, 
-    list_t *path) {
+void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end, 
+    list_t *barrier, list_t *path) {
     
     int barrierCount = 0;
+    int status = 0;
 
     printf("==STAGE 0=======================================\n");
     printf("The grid has %d rows and %d columns.\n", dim.row, dim.col);
@@ -331,7 +362,13 @@ void gridInfoPrinter(data_t dim, data_t start, data_t end, list_t *barrier,
 
     printf("The proposed route in the grid is:\n");
     routePrinter(path);
-
+    status = routeValidator(arr, dim, start, end, path);
+    if(status == BLOCKED) {
+        printf("There is a block on this route!\n");
+    }
+    else {
+        printf("The route is valid!\n");
+    }
 }
 
 int listItemCount(list_t *list) {
@@ -437,40 +474,88 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
             row = temp->data.row;
             col = temp->data.col;
             if(arr[row][col] == '#') {
-                printf("There is a block in the route path\n");
+                //printf("There is a block in the route path\n");
                 return  BLOCKED;
             }
             temp = temp->next;
 
         }
-    printf("The route is valid!\n");
+    //printf("The route is valid!\n");
     return TRUE;
 }   
 
-void routeFixer(char **arr, data_t size, list_t *route) {
+void routeFixer(char **arr, data_t size, data_t start, data_t end, 
+    list_t *route, int firstFix) {
 
     node_t *broken_segment;
-
+    list_t *new_path;
+    int notFixed = FALSE, status = 0;
+    new_path = make_list_empty();
     // Pass route into blockFinder function and return block coordinate
     broken_segment = blockFinder(arr, route);
+    removeRoute(arr, route);
     if(!broken_segment) {
         // routeFixer function called without any blocks in the route => error 
         exit(EXIT_FAILURE);
     }
 
     //  Pass broken segment into traverseGrid function and create a traversal
-    traverseGrid(arr, broken_segment, route, size);
-    // if found == TRUE -> call pathBuilder
-    // update new path 
-    // check new path 
-    // 3 possible outcomes 
-    // if route fixed -> exit loop 
-    // if route cannot be fixed -> exit loop 
-    // if block exists recall routeFixer
+    notFixed = traverseGrid(arr, broken_segment, route, size);
+    if(notFixed) {
+        // print code cannot be fixed
+        
+    }
+    else {
+        status = routeValidator(arr, size, start, end, route);
+        if(status == BLOCKED && !firstFix) {
+            routeFixer(arr, size, start, end, route, firstFix);
+            
+        }
+        else {
+            // return path is fixed.
+            routeDraw(arr, route); 
+        }
+    }
 
+    free_list(new_path);
 }
 
-void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
+void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
+    list_t *route) {
+    int routeFixed = 0;
+    // Fix route once 
+    routeFixer(arr, size, start, goal, route, 1);
+    routeFixed = routeValidator(arr, size, start, goal, route);
+    // Visualise the route 
+    if(routeFixed == TRUE) {
+        printf(BREAK);
+        gridVisualizer(arr, size);
+        printf(BREAK);
+        routePrinter(route);
+        printf("The route is valid!\n");
+        printf(DIVIDER);
+    }
+    // Proceed to next stage
+    else {
+        gridVisualizer(arr, size);
+        printf("==STAGE 2======================================\n");
+        routeFixer(arr, size, start, goal, route, 0);
+        routeFixed = routeValidator(arr, size, start, goal, route);
+
+        if(routeFixed == TRUE) {
+            gridVisualizer(arr, size);
+            printf(BREAK);
+            routePrinter(route);
+            printf("The route is valid!\n");
+        }
+        else {
+            gridVisualizer(arr, size);
+            printf("The route cannot be fixed.\n");
+        }
+    } 
+}
+
+int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     list_t *stack, *new_path;
     stack = make_list_empty();
     new_path = make_list_empty();
@@ -601,13 +686,15 @@ void traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     // return value of found
 
     if(found) {
-        // Call pathBuilder function
         new_path = pathBuilder(stack, route, dim);
-        // Update path function
+        // update old route
         updatePath(route, new_path, stack);
+
+        return 0; 
     }
+    else return TRUE;
+
     
-    free_list(new_path);
 }
 
 node_t *blockFinder(char **arr, list_t *route) {
@@ -677,14 +764,6 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
         temp = temp->prev;
     }
 
-    /*
-    for(i=0; i < size.row; i++) {
-        for(j = 0; j < size.col; j++) {
-            printf("%2d ", grid[i][j]);
-        }
-        printf("\n");
-    } */
-    
     pos = queue->foot->data;
     
     while(pos.counter != 1) {
@@ -729,13 +808,6 @@ list_t *pathBuilder(list_t *queue, list_t* route, data_t size) {
     
     return new_path;
 
-    /*
-    temp = new_path->head;
-    while(temp != NULL) {
-        printf("[%d,%d] - %d\n", temp->data.row, temp->data.col, temp->data.counter);
-
-        temp = temp->next;
-    } */
     freeGrid(grid, size);     
 }
 
@@ -791,12 +863,29 @@ void gridVisualizer(char **grid, data_t size) {
     }
     
     printf("\n");
+    counter = 0;
 
     for(i = 0; i < size.row; i++) {
-        printf("%d", i);
+        printf("%d", counter);
         for(j = 0; j < size.col; j++) {
             printf("%c", grid[i][j]);
         }
         printf("\n");
+        counter++;
+        if(counter == 10) counter = 0;
+    }
+}
+
+void gridEmptier(char **arr, data_t dim) {
+    
+    int i = 0, j = 0;
+
+    for(i=0; i <dim.row; i++) 
+    {
+        for(j=0;j<dim.col;j++) 
+        {
+            if(arr[i][j] != 'I' && arr[i][j] != 'G')
+            arr[i][j] = ' ';
+        }
     }
 }
