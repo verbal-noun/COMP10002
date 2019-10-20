@@ -174,7 +174,7 @@ int main(int argc, char const *argv[])
     freeList(blocks);
     freeList(route);
     freeGrid(arr, size);
-
+    printf("\n");
     
 
     return 0;
