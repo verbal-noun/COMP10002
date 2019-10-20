@@ -438,8 +438,8 @@ void removeBlocks(list_t *blocks, char **arr) {
 
 /******************************************************************************/
 /*
- * Function:  gridInfoPrinter
- * --------------------------
+ * Function:  readRoute
+ * ---------------------
  * Function to read routes from the input
  *
  * arr: Dynamic 2D array to hold all contents of the grid
@@ -484,10 +484,12 @@ list_t *readRoute(char **arr) {
  * 
  */
 void routeDraw(char **arr, list_t *route) {
+    // Node to traverse the list without consuming it
     node_t *temp;
 
     temp = route->head;
     while(temp != NULL) {
+        // Overwrite whitespace only
         if(arr[temp->data.row][temp->data.col] == ' ') {
                 arr[temp->data.row][temp->data.col] = ROUTE;
         }
@@ -507,10 +509,12 @@ void routeDraw(char **arr, list_t *route) {
  * 
  */
 void removeRoute(char **arr, list_t *route) {
+    // Node to traverse the list without consuming it
     node_t *temp;
 
     temp = route->head;
     while(temp != NULL) {
+        // Replace '*' with whitespace 
         if(arr[temp->data.row][temp->data.col] == ROUTE) {
             arr[temp->data.row][temp->data.col] = ' ';            
         }
@@ -528,9 +532,11 @@ void removeRoute(char **arr, list_t *route) {
  * arr: Dynamic 2D array to hold all contents of the grid
  * size: Dimention of the grid
  * 
+ * NOTE: Function taken from Lecture 7 slides.
  */
 void freeGrid(char **arr, data_t size) {
     int i = 0;
+    
     for(i = 0; i < size.row; i++)
     {
         free(arr[i]);
@@ -556,19 +562,25 @@ void freeGrid(char **arr, data_t size) {
 void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end, 
     list_t *barrier, list_t *path) {
     
+    // Variable to hold number of blocks 
     int barrierCount = 0;
+    // Variable to hold status of current route
     int status = 0;
 
     printf(STAGE_ZERO);
+    // Printing grid dimensions 
     printf("The grid has %d rows and %d columns.\n", dim.row, dim.col);
     // Print info about number of blocks
     barrierCount = listItemCount(barrier);
     printf("The grid has %d block(s).\n", barrierCount); 
+    // Coordinates of start and goal cell 
     printf("The initial cell in the grid is [%d,%d].\n", start.row, start.col);
     printf("The goal cell in the grid is [%d,%d].\n", end.row, end.row);
 
+    // Current route from the input
     printf("The proposed route in the grid is:\n");
     routePrinter(path);
+    //Check current status of the route
     status = routeValidator(arr, dim, start, end, path);
 
     // Print status of the current route
@@ -600,6 +612,7 @@ void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end,
  * return: The number of nodes
  */
 int listItemCount(list_t *list) {
+    // Variable to hold number of items in the list 
     int count = 0;
     node_t *temp;
     
@@ -624,6 +637,7 @@ int listItemCount(list_t *list) {
  * 
  */
 void routePrinter(list_t *path) {
+    // Variable to control upto 5 items printed per line
     int count = 0;
     node_t *temp;
     
@@ -665,15 +679,21 @@ void routePrinter(list_t *path) {
 int routeValidator(char **arr, data_t size, data_t start, data_t end, 
     list_t *route) {
 
+        // Variables to determine how far route has travelled at one step 
         int rowTraverse = 0;
         int colTraverse = 0;
+        // Variables to holding block cell coordinates
         int row = 0, col = 0;
+        // Variable to denote starting of the route 
+        int firstCell = TRUE;
 
+        // Check if the route starts with the correct coordinates
         if(route->head->data.row != start.row || route->head->data.col 
         != start.col) {
             return INVALID_START;
         }
 
+        // Check if the route ends with the correct coordinates
         if(route->foot->data.row != end.row || route->foot->data.col 
         != end.col) {
             return INVALID_END;
@@ -687,26 +707,38 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
         prev.row = temp->data.row;
         prev.col = temp->data.col;
 
+        // Check the validity of the current node 
         while(temp != NULL)
         {
-            // Check the validity of the current node 
+            // Cheking if the route travels outside the grid
             if(temp->data.row > size.row || temp->data.col > size.col){
                 return INVALID_MOVE; 
             }
             
+            // Any illegal row movement 
             rowTraverse = temp->data.row - prev.row;
-            //printf("%d ", rowTraverse);
             if(rowTraverse > 1 || rowTraverse < -1 ) {
+                // Check whether the route stays static after two rounds 
+                if(rowTraverse == 0 && !firstCell) {
+                    return INVALID_MOVE;
+                }
                 return INVALID_MOVE;
             }
 
+            // Any illegal column movement
             colTraverse = temp->data.col - prev.col;
             if(colTraverse > 1 || colTraverse < -1) {
+                // Check whether the route stays static after two rounds 
+                if(colTraverse == 0 && !firstCell) {
+                    return INVALID_MOVE;
+                }
                 return INVALID_MOVE;
             }
 
+            // Store coordinates of previous row for comparison
             prev.row = temp->data.row;
             prev.col = temp->data.col;
+            firstCell = FALSE;
             temp = temp->next;
             
         }
@@ -720,7 +752,6 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
             row = temp->data.row;
             col = temp->data.col;
             if(arr[row][col] == BLOCK) {
-                //printf("There is a block in the route path\n");
                 return  BLOCKED;
             }
             temp = temp->next;
