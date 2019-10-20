@@ -50,7 +50,10 @@
 #define ROUTE "*"
 #define INPUT "$"
 #define BREAK "------------------------------------------------\n"
-#define DIVIDER "================================================"
+#define DIVIDER "================================================\n"
+#define STAGE_ZERO "==STAGE 0=======================================\n"
+#define STAGE_ONE "==STAGE 1=======================================\n"
+#define STAGE_TWO "==STAGE 2=======================================\n"
 
 typedef struct node node_t;
 
@@ -143,7 +146,7 @@ int main(int argc, char const *argv[])
     gridInfoPrinter(arr, size, start, goal, blocks, route);
     status = routeValidator(arr, size, start, goal, route);
 
-    printf("==STAGE 1=======================================\n");
+    printf(STAGE_ONE);
     gridVisualizer(arr, size);
     if(status < BLOCKED) {
         return 0;
@@ -161,7 +164,7 @@ int main(int argc, char const *argv[])
         if(line[0] == '$') {
             if(!stageTwo) {
                 stageTwo = TRUE;
-                printf("==STAGE 2=======================================");
+                printf(STAGE_TWO);
             }
             updateBlocks(arr, route, blocks, size, start, goal);
         }
@@ -174,7 +177,6 @@ int main(int argc, char const *argv[])
     freeList(blocks);
     freeList(route);
     freeGrid(arr, size);
-    printf("\n");
     
 
     return 0;
@@ -521,7 +523,7 @@ void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end,
     int barrierCount = 0;
     int status = 0;
 
-    printf("==STAGE 0=======================================\n");
+    printf(STAGE_ZERO);
     printf("The grid has %d rows and %d columns.\n", dim.row, dim.col);
     // Print info about number of blocks
     barrierCount = listItemCount(barrier);
@@ -1213,36 +1215,43 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     data_t start, data_t end) {
 
     
-    int status = 0;
+    int status = 0, blockCount = 0;
     // Remove old exisitng blocks 
     removeBlocks(blocks, arr);
     freeList(blocks);
     // Read in new blocks
     blocks = readBlocks(arr);
-    
-    //visualise the grid
-    printf("\n");
-    gridVisualizer(arr, size);
-    printf(BREAK);
-    // Validate the route 
-    status = routeValidator(arr, size, start, end, route);
-
-    if(status == BLOCKED) {
-        routeFixer(arr, size, start, end, route, FALSE);
-    }
-
-    routeDraw(arr, route);
-    gridVisualizer(arr, size);
-    printf(BREAK);
-    routePrinter(route);
-    status = routeValidator(arr, size, start, end, route);
-    if(status == BLOCKED) {
-        printf("The route cannot be repaired!\n");
+    blockCount = listItemCount(blocks);
+    if(blockCount == 0) {
+        routeDraw(arr, route);
+        gridVisualizer(arr, size);
+        printf(DIVIDER);
     }
     else {
-        printf("The route is valid!\n");
-    }
-    printf(DIVIDER);   
+        //visualise the grid
+        gridVisualizer(arr, size);
+        printf(BREAK);
+        // Validate the route 
+        status = routeValidator(arr, size, start, end, route);
+
+        if(status == BLOCKED) {
+            routeFixer(arr, size, start, end, route, FALSE);
+        }
+
+        routeDraw(arr, route);
+        gridVisualizer(arr, size);
+        printf(BREAK);
+        routePrinter(route);
+        status = routeValidator(arr, size, start, end, route);
+        if(status == BLOCKED) {
+            printf("The route cannot be repaired!\n");
+        }
+        else {
+            printf("The route is valid!\n");
+        }
+        printf(DIVIDER); 
+    }   
+      
 }
 
 /******************************************************************************/
