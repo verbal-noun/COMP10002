@@ -56,7 +56,8 @@ list_t *insert_at_head(list_t *list, data_t value);
 list_t *insert_at_foot(list_t *list, data_t value);
 char **createGrid(data_t *size, data_t *init, data_t *end);
 list_t *readBlocks(char **arr); 
-void updateBlocks(list_t *blocks, char **arr);
+void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size, 
+    data_t start, data_t end);
 list_t *readRoute(char **arr);
 void freeGrid(char **arr, data_t size);
 void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end, 
@@ -78,6 +79,7 @@ void routeDraw(char **arr, list_t *route);
 void removeRoute(char **arr, list_t *route);
 void firstAttempt(char **arr, data_t size, data_t start, data_t goal, 
     list_t *route);
+int read_line(char line[]);
 
 /******************************************************************************/
 
@@ -114,7 +116,15 @@ int main(int argc, char const *argv[])
     }
 
     // Have a function to update new blocks
+    char line[100];
+    int counter = 0;
 
+    while(read_line(line) != EOF) {
+        counter++;
+        if(line[0] == '$') {
+            updateBlocks(arr, route, blocks, size, start, goal);
+        }
+    }
     // update grid and free old blocks 
     // read in new blocks
     // do routeValidation 
@@ -537,6 +547,7 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
     }
     // Proceed to next stage
     else {
+        /*
         gridVisualizer(arr, size);
         printf("==STAGE 2======================================\n");
         routeFixer(arr, size, start, goal, route, 0);
@@ -551,7 +562,7 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
         else {
             gridVisualizer(arr, size);
             printf("The route cannot be fixed.\n");
-        }
+        } */
     } 
 }
 
@@ -888,4 +899,46 @@ void gridEmptier(char **arr, data_t dim) {
             arr[i][j] = ' ';
         }
     }
+}
+
+void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size, 
+    data_t start, data_t end) {
+
+    
+    int status = 0;
+    // Remove old exisitng blocks 
+    removeBlocks(blocks, arr);
+    free_list(blocks);
+    // Read in new blocks
+    blocks = readBlocks(arr);
+    
+    //visualise the grid
+    gridVisualizer(arr, size);
+    printf(BREAK);
+    // Validate the route 
+    status = routeValidator(arr, size, start, end, route);
+
+    if(status == BLOCKED) {
+        routeFixer(arr, size, start, end, route, FALSE);
+    }
+
+    gridVisualizer(arr, size);
+    printf(DIVIDER);
+    printf("\n");
+}
+
+int read_line(char line[]) {
+    // variables to control text inflow 
+    int ch, len = 0;
+
+    while((ch = getchar()) != EOF && ch != '\n') {
+        line[len] = ch;
+        len++;
+    }
+    line[len] = '\0';
+
+    if(ch == EOF) {
+        return EOF;
+    }
+    return 0;
 }

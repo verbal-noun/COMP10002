@@ -52,33 +52,31 @@ list_t *insert_at_foot(list_t *list, data_t value) {
     return list;
 }
 
-int main(int argc, char const *argv[])
-{
-    int row = 0, col = 0;
-    
-    char **arr;
-    list_t *list;
-    list = (list_t*)malloc(sizeof(*list));
-    assert(list!= NULL);
-    list->head = list->foot = NULL;
+int read_line(char line[]) {
+    // variables to control text inflow 
+    int ch, len = 0;
 
-    data_t info = {0,0,0};
-    info.col, info.row = 1;
-    insert_at_foot(list, info);
-    info.col, info.row = 2;
-    insert_at_foot(list, info);
+    while((ch = getchar()) != EOF && ch != '\n') {
+        line[len] = ch;
+        len++;
+    }
+    line[len] = '\0';
 
-    /*
-    node_t temp = stack->foot;
-    
-    while (temp!=NULL)
-    {
-        
-        printf("[%d, %d], %d\n", temp->data.row, temp->data.col, temp->data.counter);
-        temp = temp -> prev;
-    } */
-    
-    printf("%p\n", list->foot->prev);
-    printf("%p\n", list->head);
+    if(ch == EOF) {
+        return EOF;
+    }
     return 0;
 }
+
+int main(int argc, char const *argv[])
+{
+    char ch[100][100];
+    int i = 0;
+    while(read_line(ch) != EOF) {
+        
+        printf("%s\n", ch[i]);
+        i++;
+    }
+    return 0;
+}
+
