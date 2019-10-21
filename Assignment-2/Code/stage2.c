@@ -42,21 +42,22 @@
 
 
 #define INVALID_START -1 /* If the first cell of route differs from start call*/
-#define INVALID_END -2   /* If the last cell of route differs from goal call*/
-#define INVALID_MOVE -3  /* If route makes any invalid move*/
-#define BLOCKED 4        /* If route is broken */   
-#define VALID 5          /* If route is passes all the validity conditions */
+#define INVALID_END -2   /* If the last cell of route differs from goal call  */
+#define INVALID_MOVE -3  /* If route makes any invalid move                   */
+#define BLOCKED 4        /* If route is broken                                */   
+#define VALID 5          /* If route is passes all the validity conditions    */
 #define TRUE 1
 #define FALSE 0
-#define BLOCK '#'        /* Char to denote block is the route */
-#define ROUTE '*'        /* Char to denote travelled path in the grid */   
-#define INPUT '$'        /* Indicator of routes and new block configuration */
+#define BLOCK '#'        /* Char to denote block is the route                 */
+#define ROUTE '*'        /* Char to denote travelled path in the grid         */   
+#define INPUT '$'        /* Indicator of routes and new block configuration   */
 #define BREAK "------------------------------------------------\n"      
 #define DIVIDER "================================================\n"
 #define STAGE_ZERO "==STAGE 0=======================================\n"
 #define STAGE_ONE "==STAGE 1=======================================\n"
 #define STAGE_TWO "==STAGE 2=======================================\n"
 #define LINE 3           /* Length of input like containing '$' (\0) included */
+#define MARGIN 10        /* Controls the numbers printed in the margin        */
 
 
 /* Struct declaration */
@@ -1213,10 +1214,13 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     node_t *start, *end, *temp, *prev;
     assert(route && new_path && queue);
 
+    // Variable to hold at the coordinate where the new route starts 
     start = NULL;
+    // Variable to hold at the coordinate where the new route ends 
     end = NULL;
-    temp = route->head;
 
+    temp = route->head;
+    // Finding which part of the route needs to be changed 
     while(temp != NULL) {
         if((temp->data.row == queue->head->data.row) && (temp->data.col == 
         queue->head->data.col)) {
@@ -1231,6 +1235,7 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
         if(start != NULL && end != NULL) break;
     }
 
+    // Freeing blocked parts of old route
     temp = start->next;
     while (temp != end) {
         // Free list
@@ -1240,9 +1245,10 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     }
 
     // Update route 
+    // Connecting broken segment with the head of the new path
     start->next = new_path->head;
     new_path->foot->prev = start;
-
+    // Connecting the foot of the new route with the old route
     new_path->foot->next = end;
     end->prev = new_path->foot;
 }
@@ -1257,29 +1263,33 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
  * size: Dimentions of the grid  
  */
 void gridVisualizer(char **grid, data_t size) {
-    int i = 0, j = 0, counter = 0;
+    int i = 0, j = 0;
+    // Variable to keep margin values in range [0,9]
+    int counter = 0;
     
+    // Printing the top margin
     printf(" ");
     while(counter < size.col) {
         printf("%d", i);
         counter++;
         i++;
-        if(i == 10) {
+        if(i == MARGIN) {
             i = 0;
         }    
     }
-    
     printf("\n");
     counter = 0;
 
+    // Printing contents of the 2D grid
     for(i = 0; i < size.row; i++) {
         printf("%d", counter);
         for(j = 0; j < size.col; j++) {
             printf("%c", grid[i][j]);
         }
         printf("\n");
+        // Reseting the value for the left hand side margin
         counter++;
-        if(counter == 10) counter = 0;
+        if(counter == MARGIN) counter = 0;
     }
 }
 
@@ -1300,6 +1310,7 @@ void gridEmptier(char **arr, data_t dim) {
     {
         for(j=0;j<dim.col;j++) 
         {
+            // Empty contents except the start and goal cell
             if(arr[i][j] != 'I' && arr[i][j] != 'G')
             arr[i][j] = ' ';
         }
@@ -1324,18 +1335,24 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     data_t start, data_t end) {
 
     
-    int status = 0, blockCount = 0;
-    // Remove old exisitng blocks 
+    // Variable to contain the status of current route 
+    int status = 0;
+    // Variable which keeps track of the number of blocks 
+    int blockCount = 0;
+    // Remove old blocks 
     removeBlocks(blocks, arr);
     freeList(blocks);
+
     // Read in new blocks
     blocks = readBlocks(arr);
     blockCount = listItemCount(blocks);
+    // If no blocks exist, print previous route 
     if(blockCount == 0) {
         routeDraw(arr, route);
         gridVisualizer(arr, size);
         printf(DIVIDER);
     }
+    // For new blocks configuration 
     else {
         //visualise the grid
         gridVisualizer(arr, size);
@@ -1343,18 +1360,24 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
         // Validate the route 
         status = routeValidator(arr, size, start, end, route);
 
+        // Try to do a full repair 
         if(status == BLOCKED) {
             routeFixer(arr, size, start, end, route, FALSE);
         }
 
+        // Visualise the grid before repair
         routeDraw(arr, route);
         gridVisualizer(arr, size);
         printf(BREAK);
         routePrinter(route);
+
+        
         status = routeValidator(arr, size, start, end, route);
+        // If route still blocked after attempt 
         if(status == BLOCKED) {
             printf("The route cannot be repaired!\n");
         }
+        // Repair successful
         else {
             printf("The route is valid!\n");
         }
@@ -1379,6 +1402,7 @@ int readLine(char line[]) {
     // variables to control text inflow 
     int ch, len = 0;
 
+    // Read each line
     while((ch = mygetchar()) != EOF && ch != '\n') {
         line[len] = ch;
         len++;
