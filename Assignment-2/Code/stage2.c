@@ -1024,13 +1024,11 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
 
         // Freeing memory 
         freeList(queue);
-        freeList(new_path);
         return FALSE; 
     }
     else {
 
         freeList(queue);
-        freeList(new_path);
         return TRUE;
     }
     
