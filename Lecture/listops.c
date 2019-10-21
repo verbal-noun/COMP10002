@@ -4,12 +4,13 @@
 
 typedef struct  node node_t;
 
+/*
 typedef struct
 {
-    /* data */
+    // Data
     int val;
 } data_t;
-
+*/
 struct node
 {
     /* data */
@@ -49,7 +50,7 @@ int is_list_empty(list_t *list) {
 /*
     A function to free the memory of a malloc call 
 */
-void free_list(list_t *list) {
+void freeList(list_t *list) {
     node_t *curr, *prev;
     assert(list != NULL);
     curr = list -> head;
@@ -94,7 +95,7 @@ list_t *insert_at_foot(list_t *list, data_t value) {
     assert(new != NULL && list != NULL);
     new->data = value;
     new->next = NULL;
-    if(list->foot NULL) 
+    if(list->foot == NULL) 
     {
         // This is a first insertion in the list 
         list->foot = new;
@@ -122,7 +123,7 @@ data_t get_head(list_t *list) {
     A function to consume the data at the head the move the linked list 
     forward 
 */
-list_t *get_foot(list_t *list) {
+list_t *get_tail(list_t *list) {
     node_t *oldhead;
     assert(list != NULL && list->head != NULL);
     oldhead = list -> head;

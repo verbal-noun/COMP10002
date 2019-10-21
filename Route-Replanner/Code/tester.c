@@ -526,7 +526,7 @@ void removeRoute(char **arr, list_t *route) {
 
 /******************************************************************************/
 /*
- * Function:  gridInfoPrinter
+ * Function:  freeGrid
  * --------------------------
  * Function to free a dynamic 2D grid
  *
@@ -576,7 +576,7 @@ void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end,
     printf("The grid has %d block(s).\n", barrierCount); 
     // Coordinates of start and goal cell 
     printf("The initial cell in the grid is [%d,%d].\n", start.row, start.col);
-    printf("The goal cell in the grid is [%d,%d].\n", end.row, end.row);
+    printf("The goal cell in the grid is [%d,%d].\n", end.row, end.col);
 
     // Current route from the input
     printf("The proposed route in the grid is:\n");
@@ -1020,6 +1020,8 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
     if(found) {
         // If a solution is found create a new alternative path
         new_path = pathBuilder(queue, route, dim);
+        // Remove route with blocks in the path
+        removeRoute(arr, route);
         // update old route
         updatePath(route, new_path, queue);
 
@@ -1369,13 +1371,13 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
         routeDraw(arr, route);
         gridVisualizer(arr, size);
         printf(BREAK);
-        routePrinter(route);
 
         
         status = routeValidator(arr, size, start, end, route);
         // If route still blocked after attempt 
         if(status == BLOCKED) {
             printf("The route cannot be repaired!\n");
+            routePrinter(route);
         }
         // Repair successful
         else {
@@ -1421,7 +1423,7 @@ int readLine(char line[]) {
 
  * Function:  mygetchar
  * --------------------
- * Speacial getchar(0) '/r'
+ * Special getchar(0) '/r'
  *  
  * returns: c after removing /r
  * 

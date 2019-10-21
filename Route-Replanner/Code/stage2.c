@@ -42,21 +42,22 @@
 
 
 #define INVALID_START -1 /* If the first cell of route differs from start call*/
-#define INVALID_END -2   /* If the last cell of route differs from goal call*/
-#define INVALID_MOVE -3  /* If route makes any invalid move*/
-#define BLOCKED 4        /* If route is broken */   
-#define VALID 5          /* If route is passes all the validity conditions */
+#define INVALID_END -2   /* If the last cell of route differs from goal call  */
+#define INVALID_MOVE -3  /* If route makes any invalid move                   */
+#define BLOCKED 4        /* If route is broken                                */   
+#define VALID 5          /* If route is passes all the validity conditions    */
 #define TRUE 1
 #define FALSE 0
-#define BLOCK '#'        /* Char to denote block is the route */
-#define ROUTE '*'        /* Char to denote travelled path in the grid */   
-#define INPUT '$'        /* Indicator of routes and new block configuration */
+#define BLOCK '#'        /* Char to denote block is the route                 */
+#define ROUTE '*'        /* Char to denote travelled path in the grid         */   
+#define INPUT '$'        /* Indicator of routes and new block configuration   */
 #define BREAK "------------------------------------------------\n"      
 #define DIVIDER "================================================\n"
 #define STAGE_ZERO "==STAGE 0=======================================\n"
 #define STAGE_ONE "==STAGE 1=======================================\n"
 #define STAGE_TWO "==STAGE 2=======================================\n"
 #define LINE 3           /* Length of input like containing '$' (\0) included */
+#define MARGIN 10        /* Controls the numbers printed in the margin        */
 
 
 /* Struct declaration */
@@ -64,7 +65,7 @@ typedef struct node node_t;
 
 /* A struct to handle the cell coordinates and counter values */
 typedef struct
-{   
+{
     /* data */
     int row;
     int col;
@@ -134,8 +135,8 @@ int main(int argc, char const *argv[])
     // Variable which holds the condition of the route
     int status = 0; 
     // Creating a 2D to hold the grid 
-    char **arr;
-    arr = createGrid(&size, &start, &goal);
+    char **grid;
+    grid = createGrid(&size, &start, &goal);
 
     // Variables used to process stage 2
     // An array to hold '$' input commands
@@ -145,21 +146,21 @@ int main(int argc, char const *argv[])
     
     // Creating the blocks & reading from the input
     list_t *blocks;
-    blocks = readBlocks(arr);
+    blocks = readBlocks(grid);
     
     // Creating a linked list for the route and taking input
     list_t *route;
-    route = readRoute(arr);
+    route = readRoute(grid);
 
     // Printing grid information as part of stage 0
-    //gridInfoPrinter(arr, size, start, goal, blocks, route);
+    gridInfoPrinter(grid, size, start, goal, blocks, route);
     // Checking validity of the route
-    status = routeValidator(arr, size, start, goal, route);
+    status = routeValidator(grid, size, start, goal, route);
 
     // Stage 1 output formatting
     printf(STAGE_ONE);
     // Printing contents of the grid onto the screen 
-    gridVisualizer(arr, size);
+    gridVisualizer(grid, size);
     // If route has invalid start, end or moves 
     if(status < BLOCKED) {
         printf(DIVIDER);
@@ -168,7 +169,7 @@ int main(int argc, char const *argv[])
     // If route has a block in it
     else if(status == BLOCKED) {
         // Call fixer function -> Attempt to fix only the first block 
-        firstAttempt(arr, size, start, goal, route);
+        firstAttempt(grid, size, start, goal, route);
     }
     
     // Read in new block configurations
@@ -180,7 +181,7 @@ int main(int argc, char const *argv[])
                 printf(STAGE_TWO);
             }
             // Update new configuration and proced repair if required
-            updateBlocks(arr, route, blocks, size, start, goal);
+            updateBlocks(grid, route, blocks, size, start, goal);
         }
     }
     
@@ -191,7 +192,7 @@ int main(int argc, char const *argv[])
     /* Freeing memory */
     freeList(blocks);
     freeList(route);
-    freeGrid(arr, size);
+    freeGrid(grid, size);
     
 
     return 0;
@@ -525,7 +526,7 @@ void removeRoute(char **arr, list_t *route) {
 
 /******************************************************************************/
 /*
- * Function:  gridInfoPrinter
+ * Function:  freeGrid
  * --------------------------
  * Function to free a dynamic 2D grid
  *
@@ -575,14 +576,14 @@ void gridInfoPrinter(char **arr, data_t dim, data_t start, data_t end,
     printf("The grid has %d block(s).\n", barrierCount); 
     // Coordinates of start and goal cell 
     printf("The initial cell in the grid is [%d,%d].\n", start.row, start.col);
-    printf("The goal cell in the grid is [%d,%d].\n", end.row, end.row);
+    printf("The goal cell in the grid is [%d,%d].\n", end.row, end.col);
 
     // Current route from the input
     printf("The proposed route in the grid is:\n");
     routePrinter(path);
     //Check current status of the route
     status = routeValidator(arr, dim, start, end, path);
-    printf("%d  %d\n",path->foot->data.row, path->foot->data.col); 
+
     // Print status of the current route
     if(status == INVALID_START) {
         printf("Initial cell in the route is wrong\n");
@@ -686,7 +687,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
         int row = 0, col = 0;
         // Variable to denote starting of the route 
         int firstCell = TRUE;
-        
+
         // Check if the route starts with the correct coordinates
         if(route->head->data.row != start.row || route->head->data.col 
         != start.col) {
@@ -696,10 +697,9 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
         // Check if the route ends with the correct coordinates
         if(route->foot->data.row != end.row || route->foot->data.col 
         != end.col) {
-            
             return INVALID_END;
         }
-           
+
         // Check for illegal move in the route
         node_t *temp; 
         data_t prev;
@@ -780,7 +780,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
 void routeFixer(char **arr, data_t size, data_t start, data_t end, 
     list_t *route, int firstFix) {
 
-    // The cell in route before the first block
+    // The cell in route before the first block 
     node_t *broken_segment;
 
     // Status denoting variables 
@@ -788,22 +788,17 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
 
     // Pass route into blockFinder function and return block coordinate
     broken_segment = blockFinder(arr, route);
-     
-    // Remove route with blocks in the path
-    removeRoute(arr, route);
+    
 
     if(!broken_segment) {
         // routeFixer function called without any blocks in the route => error 
         exit(EXIT_FAILURE);
-        
-
     }
 
     //  Pass broken segment into traverseGrid function and create a traversal
     notFixed = traverseGrid(arr, broken_segment, route, size);
-
     if(notFixed) {
-        // Terminate function if no solutions are found 
+        // Terminate function if no solutions are foind 
     }
     else {
         // If not stage-1, try to do a full repair recursively
@@ -841,7 +836,6 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
     
     // Fix route once denoting presence of Stage 1
     routeFixer(arr, size, start, goal, route, TRUE);
-    printf("%d  %d\n",route->foot->data.row, route->foot->data.col);
     routeFixed = routeValidator(arr, size, start, goal, route);
     
     // Visualise the route 
@@ -1019,16 +1013,13 @@ int traverseGrid(char **arr, node_t *cell, list_t *route, data_t dim) {
         temp = temp->next;
         if(found) break;
     }
-
-
-
+    
     // return value of found
     if(found) {
         // If a solution is found create a new alternative path
         new_path = pathBuilder(queue, route, dim);
         // update old route
         updatePath(route, new_path, queue);
-        temp = route->head;
 
         // Freeing memory 
         freeList(queue);
@@ -1221,10 +1212,13 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     node_t *start, *end, *temp, *prev;
     assert(route && new_path && queue);
 
+    // Variable to hold at the coordinate where the new route starts 
     start = NULL;
+    // Variable to hold at the coordinate where the new route ends 
     end = NULL;
-    temp = route->head;
 
+    temp = route->head;
+    // Finding which part of the route needs to be changed 
     while(temp != NULL) {
         if((temp->data.row == queue->head->data.row) && (temp->data.col == 
         queue->head->data.col)) {
@@ -1239,6 +1233,7 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
         if(start != NULL && end != NULL) break;
     }
 
+    // Freeing blocked parts of old route
     temp = start->next;
     while (temp != end) {
         // Free list
@@ -1248,9 +1243,10 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
     }
 
     // Update route 
+    // Connecting broken segment with the head of the new path
     start->next = new_path->head;
     new_path->foot->prev = start;
-
+    // Connecting the foot of the new route with the old route
     new_path->foot->next = end;
     end->prev = new_path->foot;
 }
@@ -1265,30 +1261,34 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
  * size: Dimentions of the grid  
  */
 void gridVisualizer(char **grid, data_t size) {
-    int i = 0, j = 0, counter = 0;
+    int i = 0, j = 0;
+    // Variable to keep margin values in range [0,9]
+    int counter = 0;
+    
+    // Printing the top margin
     printf(" ");
     while(counter < size.col) {
         printf("%d", i);
         counter++;
         i++;
-        if(i == 10) {
+        if(i == MARGIN) {
             i = 0;
         }    
     }
-    
     printf("\n");
     counter = 0;
 
+    // Printing contents of the 2D grid
     for(i = 0; i < size.row; i++) {
         printf("%d", counter);
         for(j = 0; j < size.col; j++) {
             printf("%c", grid[i][j]);
         }
         printf("\n");
+        // Reseting the value for the left hand side margin
         counter++;
-        if(counter == 10) counter = 0;
+        if(counter == MARGIN) counter = 0;
     }
-    
 }
 
 /******************************************************************************/
@@ -1308,6 +1308,7 @@ void gridEmptier(char **arr, data_t dim) {
     {
         for(j=0;j<dim.col;j++) 
         {
+            // Empty contents except the start and goal cell
             if(arr[i][j] != 'I' && arr[i][j] != 'G')
             arr[i][j] = ' ';
         }
@@ -1332,18 +1333,24 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
     data_t start, data_t end) {
 
     
-    int status = 0, blockCount = 0;
-    // Remove old exisitng blocks 
+    // Variable to contain the status of current route 
+    int status = 0;
+    // Variable which keeps track of the number of blocks 
+    int blockCount = 0;
+    // Remove old blocks 
     removeBlocks(blocks, arr);
     freeList(blocks);
+
     // Read in new blocks
     blocks = readBlocks(arr);
     blockCount = listItemCount(blocks);
+    // If no blocks exist, print previous route 
     if(blockCount == 0) {
         routeDraw(arr, route);
         gridVisualizer(arr, size);
         printf(DIVIDER);
     }
+    // For new blocks configuration 
     else {
         //visualise the grid
         gridVisualizer(arr, size);
@@ -1351,18 +1358,24 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
         // Validate the route 
         status = routeValidator(arr, size, start, end, route);
 
+        // Try to do a full repair 
         if(status == BLOCKED) {
             routeFixer(arr, size, start, end, route, FALSE);
         }
 
+        // Visualise the grid before repair
         routeDraw(arr, route);
         gridVisualizer(arr, size);
         printf(BREAK);
-        routePrinter(route);
+
+        
         status = routeValidator(arr, size, start, end, route);
+        // If route still blocked after attempt 
         if(status == BLOCKED) {
             printf("The route cannot be repaired!\n");
+            routePrinter(route);
         }
+        // Repair successful
         else {
             printf("The route is valid!\n");
         }
@@ -1387,6 +1400,7 @@ int readLine(char line[]) {
     // variables to control text inflow 
     int ch, len = 0;
 
+    // Read each line
     while((ch = mygetchar()) != EOF && ch != '\n') {
         line[len] = ch;
         len++;
@@ -1405,7 +1419,7 @@ int readLine(char line[]) {
 
  * Function:  mygetchar
  * --------------------
- * Speacial getchar(0) '/r'
+ * Special getchar(0) '/r'
  *  
  * returns: c after removing /r
  * 
