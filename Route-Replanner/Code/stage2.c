@@ -789,6 +789,8 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
     // Pass route into blockFinder function and return block coordinate
     broken_segment = blockFinder(arr, route);
     
+    // Remove route with blocks in the path
+    removeRoute(arr, route);
 
     if(!broken_segment) {
         // routeFixer function called without any blocks in the route => error 
