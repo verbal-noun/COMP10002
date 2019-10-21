@@ -329,7 +329,7 @@ list_t *insertFoot(list_t *list, data_t value) {
  * --------------------------
  * Function to create dynamic 2D grid based of input
  *
- * size: Dimention of the grid
+ * size: Dimension of the grid
  * init: Coordinate of starting cell
  * end: Coordinates of ending cell
  * 
@@ -553,7 +553,7 @@ void freeGrid(char **arr, data_t size) {
  * Function to process stage 0 info printing of the input
  *
  * arr: Dynamic 2D array to hold all contents of the grid
- * dim: Dimention of the grid
+ * dim: Dimension of the grid
  * start: Coordinate of starting cell
  * end: Coordinates of ending cell
  * barrier: Linked list of the blocks in the grid 
@@ -667,15 +667,16 @@ void routePrinter(list_t *path) {
 /*
  * Function:  routeValidator
  * -------------------------
- * Function to process stage 1: make one attempt to fix the route and fix the 
- * first broken segment 
+ * A function which checks the status of current route
  *
  * arr: Dynamic 2D array to hold all contents of the grid
- * size: Dimention of the grid
+ * size: Dimension of the grid
  * start: Coordinate of starting cell
- * goal: Coordinates of ending cell
+ * end: Coordinates of ending cell
  * route: Linked list of path taken to reach the destination
  * 
+ * return: A value which determines whether the route has invalid start, 
+ *         end cell, makes invalid moves, has blocks or is completely valid
  */
 int routeValidator(char **arr, data_t size, data_t start, data_t end, 
     list_t *route) {
@@ -770,7 +771,7 @@ int routeValidator(char **arr, data_t size, data_t start, data_t end,
  * do a full repair
  *
  * arr: Dynamic 2D array to hold all contents of the grid
- * size: Dimention of the grid
+ * size: Dimension of the grid
  * start: Coordinate of starting cell
  * goal: Coordinates of ending cell
  * route: Linked list of path taken to reach the destination
@@ -822,10 +823,10 @@ void routeFixer(char **arr, data_t size, data_t start, data_t end,
  * Function:  firstAttempt
  * -----------------------
  * Function to process stage 1: make one attempt to fix the route and fix the 
- * first broken segement 
+ * first broken segment 
  *
  * arr: Dynamic 2D array to hold all contents of the grid
- * size: Dimention of the grid
+ * size: Dimension of the grid
  * start: Coordinate of starting cell
  * goal: Coordinates of ending cell
  * route: Linked list of path taken to reach the destination
@@ -868,7 +869,7 @@ void firstAttempt(char **arr, data_t size, data_t start, data_t goal,
  * arr: Dynamic 2D array to hold all contents of the grid
  * cell: the cell right before the first block in the route 
  * route: Linked list of path taken to reach the destination
- * size: Dimentions of the grid
+ * size: Dimensions of the grid
  *  
  * return: returns FALSE if no fix found of the broken route else returns TRUE
  */
@@ -1079,7 +1080,7 @@ node_t *blockFinder(char **arr, list_t *route) {
  * -----------------------
  * Checks for duplicates in the queue 
  *
- * row: xycoordinate of the cell being considered
+ * row: x-coordinate of the cell being considered
  * col: y-coordinate of the cell being considered
  * queue: A linked list containing the queue created from traversing the list 
  *        and flushing the grid with counter values  
@@ -1106,12 +1107,13 @@ int checkQueue(int row, int col, list_t *queue) {
  * Function:  pathBuilder 
  * ----------------------
  * Forms a new route by traversing from the bottom of the queue to the cell 
- * before the first broken segment
+ * before the first broken segment until a fix is found or all cells have been 
+ * traversed
  * 
  * queue: A linked list containing the queue created from traversing the list 
  *        and flushing the grid with counter values 
  * route: Linked list of path taken to reach the destination
- * size: Dimentions of the grid
+ * size: Dimensions of the grid
  * 
  * return: A new path containing an alternative route
  */
@@ -1260,7 +1262,7 @@ void updatePath(list_t *route, list_t *new_path, list_t* queue) {
  * Prints contents of the Grid on the screen
  *
  * arr: Dynamic 2D array to hold all contents of the grid
- * size: Dimentions of the grid  
+ * size: Dimensions of the grid  
  */
 void gridVisualizer(char **grid, data_t size) {
     int i = 0, j = 0;
@@ -1300,7 +1302,7 @@ void gridVisualizer(char **grid, data_t size) {
  * Fills dynamic 2D grid with ' '
  *
  * arr: Dynamic 2D array to hold all contents of the grid
- * dim: Dimentions of the grid
+ * dim: Dimensions of the grid
  */
 void gridEmptier(char **arr, data_t dim) {
     
@@ -1326,7 +1328,7 @@ void gridEmptier(char **arr, data_t dim) {
  * arr: Dynamic 2D array to hold all contents of the grid
  * route: Linked list of path taken to reach the destination
  * blocks: Obstacles on the grid 
- * size: Dimentions of the grid
+ * size: Dimensions of the grid
  * start: Coordinate of starting cell
  * end: Coordinates of ending cell
  *  
