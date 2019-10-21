@@ -243,7 +243,7 @@ void freeList(list_t *list) {
 
 /******************************************************************************/
 /*
- * Function:  insertFoot
+ * Function:  insertHead
  * --------------------------
  * Function to insert item at the top of a doubly linked list
  *
@@ -630,7 +630,7 @@ int listItemCount(list_t *list) {
 
 /******************************************************************************/
 /*
- * Function:  
+ * Function:  routePrinter
  * -----------------------
  * Prints the route grid onto the screen - upto 5 coordinates at a time  
  * 
@@ -666,7 +666,7 @@ void routePrinter(list_t *path) {
 /******************************************************************************/
 /*
  * Function:  routeValidator
- * -----------------------
+ * -------------------------
  * Function to process stage 1: make one attempt to fix the route and fix the 
  * first broken segment 
  *
@@ -1321,7 +1321,7 @@ void gridEmptier(char **arr, data_t dim) {
 /*
  * Function:  updateBlocks
  * -----------------------
- * reads new block configuration and tries to do a full repart
+ * reads new block configuration and tries to do a full repair
  *
  * arr: Dynamic 2D array to hold all contents of the grid
  * route: Linked list of path taken to reach the destination
@@ -1388,7 +1388,7 @@ void updateBlocks(char **arr, list_t *route, list_t *blocks, data_t size,
 
 /******************************************************************************/
 /*
- * Function:  read_line
+ * Function:  readLine
  * --------------------
  * reads the text input line by line
  *
